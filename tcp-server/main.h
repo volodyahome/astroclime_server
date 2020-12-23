@@ -46,6 +46,7 @@ char md5_str[33];
 char time_get_file[12];
 struct tm *u;
 
+//Server statistics
 struct rusage usage;
 
 //Resp command ping
@@ -54,6 +55,11 @@ char resp_ping[] = "{\"resp\":\"pong\",\"data\":[1,2,3]}\n";
 //Resp command fwinfo
 char resp_fwinfo[512] = "{\"fwsize\":%llu,\"fwmd5\":\"%s\",\"dt\":\"%s\"}\n";
 
+//Resp command stat
+char resp_stat[512] = "{\"conn\":1,\"mem_used\":7.4707794189453125}";
+
+//Resp command close
+char resp_close[] = "{\"resp\":\"bay\"}";
 
 //Reading firmware
 int read_fw(char * file_name);

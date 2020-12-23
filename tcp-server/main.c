@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
         if (strncmp("stat", buff_recv, 4) == 0) {
             getrusage(RUSAGE_SELF, &usage);
             
-            printf("CPU time: \n 1. %ld.%061d sec user,\n 2. %ld.%061d sec system\n", usage.ru_utime.tv_sec, usage.ru_utime.tv_usec, usage.ru_stime.tv_sec, usage.ru_stime.tv_usec);
+            printf("CPU time: \n1. %ld.%061d sec user,\n2. %ld.%061d sec system\n3. mem %ld", usage.ru_utime.tv_sec, usage.ru_utime.tv_usec, usage.ru_stime.tv_sec, usage.ru_stime.tv_usec, usage.ru_maxrss);
             
             if(send(connfd, buff_recv, sizeof(buff_recv) , 0) == -1) {
                 perror("Error send fwinfo");
@@ -101,8 +101,15 @@ int main(int argc, char *argv[]) {
         }
         
         if (strncmp("close", buff_recv, 5) == 0) {
-            close(connfd);
+            
+            if(send(connfd, resp_close, sizeof(resp_close) , 0) == -1) {
+                perror("Error send close");
+            }
+            
             sleep(1);
+            
+            close(connfd);
+            
             printf("Connection with client closes.\n");
             break;
         }
