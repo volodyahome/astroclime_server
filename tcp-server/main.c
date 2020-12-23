@@ -1,49 +1,54 @@
-//
-//  main.c
-//  tcp-server
-//
-//  Created by BS on 19.12.2020.
-//
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <unistd.h>
-
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
-#include <sys/resource.h>
-
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <openssl/md5.h>
+/*
+ * Copyright (c) 2020 volodyahome
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
+ */
 
 #include "main.h"
+#include "logger.h"
+
+char *level_strings[] = {
+    "DEBUG", "INFO", "ERROR",
+};
 
 int main(int argc, char *argv[]) {
+    
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
+    
     if (listenfd == -1) {
-        printf("socket creation failed...\n");
+        logger(level_strings[LOG_ERROR], "socket creation failed...\n");
         exit(0);
     } else {
-        printf("Socket successfully created..\n");
+        logger(level_strings[LOG_INFO], "Socket successfully created..\n");
     }
     
     //clear memory
     bzero(&serv_addr, sizeof(serv_addr));
     bzero(&client_addr, sizeof(client_addr));
-    
-    //fill memory with a constant byte
-    memset(&serv_addr, '0', sizeof(serv_addr));
+    bzero(&serv_addr, sizeof(serv_addr));
     
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     serv_addr.sin_port = htons(5000);
     
     if(bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1) {
-        printf("Port reservation failed...\n");
+        logger(level_strings[LOG_ERROR], "Port reservation failed...\n");
         exit(1);
     }
     
@@ -52,30 +57,40 @@ int main(int argc, char *argv[]) {
     connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
     
     if(connfd == -1) {
-        printf("Connection failed...\n");
+        logger(level_strings[LOG_ERROR], "Connection failed...\n");
         close(connfd);
     } else {
-        printf("Connection success %i...\n", connfd);
+        
+        sprintf(buff_log, "Connection success %i...\n", connfd);
+        logger(level_strings[LOG_INFO], buff_log);
+        
         socklen_t len = sizeof(client_addr);
         getsockname(connfd, (struct sockaddr*)&client_addr, &len);
         inet_ntop(AF_INET, &client_addr.sin_addr, client_ip, sizeof(client_ip));
         client_port = ntohs(client_addr.sin_port);
-        printf("Client ip address: %s, port: %d\n", client_ip, client_port);
+        
+        sprintf(buff_log, "Client ip address: %s, port: %d\n", client_ip, client_port);
+        logger(level_strings[LOG_INFO], buff_log);
+    
     }
     
     while (1) {
         recv(connfd, buff_recv, sizeof(buff_recv), 0);
         
         if (strncmp("ping", buff_recv, 4) == 0) {
+            
+            logger(level_strings[LOG_INFO], resp_ping);
+            
             send(connfd, &resp_ping, sizeof(resp_ping), 0);
         }
         
         if (strncmp("stat", buff_recv, 4) == 0) {
             getrusage(RUSAGE_SELF, &usage);
             
-            printf("CPU time: \n1. %ld.%061d sec user,\n2. %ld.%061d sec system\n3. mem %ld", usage.ru_utime.tv_sec, usage.ru_utime.tv_usec, usage.ru_stime.tv_sec, usage.ru_stime.tv_usec, usage.ru_maxrss);
+            sprintf(buff_log, "CPU time: \n1. %ld.%061d sec user,\n2. %ld.%061d sec system\n3. mem %ld", usage.ru_utime.tv_sec, usage.ru_utime.tv_usec, usage.ru_stime.tv_sec, usage.ru_stime.tv_usec, usage.ru_maxrss);
+            logger(level_strings[LOG_INFO], buff_log);
             
-            if(send(connfd, buff_recv, sizeof(buff_recv) , 0) == -1) {
+            if(send(connfd, resp_stat, sizeof(resp_stat) , 0) == -1) {
                 perror("Error send fwinfo");
             }
         }
@@ -90,6 +105,8 @@ int main(int argc, char *argv[]) {
             time_fw(u);
             
             sprintf(buff_recv, resp_fwinfo, &file_info.st_size, &md5_str, &time_get_file);
+            
+            logger(level_strings[LOG_INFO], buff_recv);
             
             if(send(connfd, buff_recv, sizeof(buff_recv) , 0) == -1) {
                 perror("Error send fwinfo");
@@ -110,7 +127,7 @@ int main(int argc, char *argv[]) {
             
             close(connfd);
             
-            printf("Connection with client closes.\n");
+            logger(level_strings[LOG_INFO], "Connection with client closes.\n");
             break;
         }
         
