@@ -47,6 +47,11 @@ struct statm_t{
     unsigned long   dt;        //dirty pages (unused in Linux 2.6)
 };
 
+//Log levels
+char *level_strings[] = {
+    "DEBUG", "INFO", "ERROR",
+};
+
 int listenfd = 0;
 
 int connfd = 0;

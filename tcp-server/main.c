@@ -23,10 +23,6 @@
 #include "main.h"
 #include "logger.h"
 
-char *level_strings[] = {
-    "DEBUG", "INFO", "ERROR",
-};
-
 int main(int argc, char *argv[]) {
     
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -88,16 +84,18 @@ int main(int argc, char *argv[]) {
             getrusage(RUSAGE_SELF, &usage);
             
             sprintf(buff_log, "CPU time: \n1. %ld.%061d sec user,\n2. %ld.%061d sec system\n3. mem %ld", usage.ru_utime.tv_sec, usage.ru_utime.tv_usec, usage.ru_stime.tv_sec, usage.ru_stime.tv_usec, usage.ru_maxrss);
+            
             logger(level_strings[LOG_INFO], buff_log);
             
             if(send(connfd, resp_stat, sizeof(resp_stat) , 0) == -1) {
-                perror("Error send fwinfo");
+                logger(level_strings[LOG_ERROR], "Error send fwinfo");
             }
         }
         
         if (strncmp("fwinfo", buff_recv, 6) == 0) {
-            printf("%s\n", buff_recv);
-            
+            sprintf(buff_log, "%s\n", buff_recv);
+            logger(level_strings[LOG_INFO], buff_log);
+        
             info_fw(file_name);
             
             md5_fw(file_name);
@@ -109,7 +107,7 @@ int main(int argc, char *argv[]) {
             logger(level_strings[LOG_INFO], buff_recv);
             
             if(send(connfd, buff_recv, sizeof(buff_recv) , 0) == -1) {
-                perror("Error send fwinfo");
+                logger(level_strings[LOG_ERROR], "Error send fwinfo");
             }
         }
         
@@ -120,7 +118,7 @@ int main(int argc, char *argv[]) {
         if (strncmp("close", buff_recv, 5) == 0) {
             
             if(send(connfd, resp_close, sizeof(resp_close) , 0) == -1) {
-                perror("Error send close");
+                logger(level_strings[LOG_ERROR], "Error send close");
             }
             
             sleep(1);
@@ -145,13 +143,14 @@ int read_fw(char * file_name) {
     
     if((fp= fopen(file_name, "rb"))==NULL)
     {
-        perror("Error occured while opening file");
+        logger(level_strings[LOG_ERROR], "Error occured while opening file");
         return 1;
     }
     
     while((c=getc(fp))!= EOF)
     {
-        printf("%02x\n", c);
+        sprintf(buff_log, "%02x\n", c);
+        logger(level_strings[LOG_INFO], buff_log);
     }
     
     fclose(fp);
@@ -164,7 +163,7 @@ void info_fw(char * file_name) {
     
     if((fp= fopen(file_name, "rb"))==NULL)
     {
-        perror("Error occured while opening file");
+        logger(level_strings[LOG_ERROR], "Error occured while opening file");
     }
     
     fstat(fileno(fp), &file_info);
@@ -183,7 +182,7 @@ void md5_fw(char * file_name){
     
     if((fp= fopen(file_name, "rb"))==NULL)
     {
-        perror("Error occured while opening file");
+        logger(level_strings[LOG_ERROR], "Error occured while opening file");
     }
     
     MD5_Init(&md_context);
