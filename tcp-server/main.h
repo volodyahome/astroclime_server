@@ -71,7 +71,7 @@ unsigned int client_port;
 char buff_recv[512];
 
 //Firmware path
-char * file_name = "/Users/bs/Desktop/tcp-server/tcp-server/fw/firmware";
+char * file_name = "/Users/testpc/Desktop/astroclime_server/tcp-server/fw/firmware";
 
 //Firmware info
 struct stat file_info;

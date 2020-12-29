@@ -23,15 +23,30 @@
 #include "main.h"
 #include "logger.h"
 
+char buff_log[512];
+
 int main(int argc, char *argv[]) {
+    SLogConfig slgCfg;
+    slog_init(NULL, SLOG_INFO, 0);
+    
+    /* Setup configuration parameters */
+    slgCfg.eColorFormat = SLOG_COLOR_TAG;
+    strcpy(slgCfg.sFilePath, "/Users/testpc/Desktop/astroclime_server/tcp-server/log/");
+    strcpy(slgCfg.sFileName, "astroclime.log");
+    slgCfg.nTraceTid = 0;
+    slgCfg.nToScreen = 0;
+    slgCfg.nToFile = 1;
+    slgCfg.nFlush = 0;
+    slgCfg.nFlags = SLOG_FLAGS_ALL;
+    slog_config_set(&slgCfg);
     
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
     
     if (listenfd == -1) {
-        logger(level_strings[LOG_ERROR], "socket creation failed...\n");
+        slog("socket creation failed...");
         exit(0);
     } else {
-        logger(level_strings[LOG_INFO], "Socket successfully created..\n");
+        slog("Socket successfully created..");
     }
     
     //clear memory
@@ -44,7 +59,7 @@ int main(int argc, char *argv[]) {
     serv_addr.sin_port = htons(5000);
     
     if(bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1) {
-        logger(level_strings[LOG_ERROR], "Port reservation failed...\n");
+        slog("Port reservation failed...");
         exit(1);
     }
     
@@ -53,30 +68,26 @@ int main(int argc, char *argv[]) {
     connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
     
     if(connfd == -1) {
-        logger(level_strings[LOG_ERROR], "Connection failed...\n");
+        slog("Connection failed...");
         close(connfd);
     } else {
-        
-        sprintf(buff_log, "Connection success %i...\n", connfd);
-        logger(level_strings[LOG_INFO], buff_log);
+        sprintf(buff_log, "Connection success %i...", connfd);
+        slog(buff_log);
         
         socklen_t len = sizeof(client_addr);
         getsockname(connfd, (struct sockaddr*)&client_addr, &len);
         inet_ntop(AF_INET, &client_addr.sin_addr, client_ip, sizeof(client_ip));
         client_port = ntohs(client_addr.sin_port);
         
-        sprintf(buff_log, "Client ip address: %s, port: %d\n", client_ip, client_port);
-        logger(level_strings[LOG_INFO], buff_log);
-    
+        sprintf(buff_log, "Client ip address: %s, port: %d", client_ip, client_port);
+        slog(buff_log);
     }
     
     while (1) {
         recv(connfd, buff_recv, sizeof(buff_recv), 0);
         
         if (strncmp("ping", buff_recv, 4) == 0) {
-            
-            logger(level_strings[LOG_INFO], resp_ping);
-            
+            slog(resp_ping);
             send(connfd, &resp_ping, sizeof(resp_ping), 0);
         }
         
@@ -84,17 +95,17 @@ int main(int argc, char *argv[]) {
             getrusage(RUSAGE_SELF, &usage);
             
             sprintf(buff_log, "CPU time: \n1. %ld.%061d sec user,\n2. %ld.%061d sec system\n3. mem %ld", usage.ru_utime.tv_sec, usage.ru_utime.tv_usec, usage.ru_stime.tv_sec, usage.ru_stime.tv_usec, usage.ru_maxrss);
-            
-            logger(level_strings[LOG_INFO], buff_log);
+
+            slog(buff_log);
             
             if(send(connfd, resp_stat, sizeof(resp_stat) , 0) == -1) {
-                logger(level_strings[LOG_ERROR], "Error send fwinfo");
+                slog("Error send fwinfo");
             }
         }
         
         if (strncmp("fwinfo", buff_recv, 6) == 0) {
-            sprintf(buff_log, "%s\n", buff_recv);
-            logger(level_strings[LOG_INFO], buff_log);
+            sprintf(buff_log, "%s", buff_recv);
+            slog(buff_log);
         
             info_fw(file_name);
             
@@ -104,10 +115,10 @@ int main(int argc, char *argv[]) {
             
             sprintf(buff_recv, resp_fwinfo, &file_info.st_size, &md5_str, &time_get_file);
             
-            logger(level_strings[LOG_INFO], buff_recv);
+            slog(buff_recv);
             
             if(send(connfd, buff_recv, sizeof(buff_recv) , 0) == -1) {
-                logger(level_strings[LOG_ERROR], "Error send fwinfo");
+                slog("Error send fwinfo");
             }
         }
         
@@ -118,14 +129,12 @@ int main(int argc, char *argv[]) {
         if (strncmp("close", buff_recv, 5) == 0) {
             
             if(send(connfd, resp_close, sizeof(resp_close) , 0) == -1) {
-                logger(level_strings[LOG_ERROR], "Error send close");
+                slog("Error send close");
             }
             
             sleep(1);
-            
             close(connfd);
-            
-            logger(level_strings[LOG_INFO], "Connection with client closes.\n");
+            slog("Connection with client closes");
             break;
         }
         
@@ -143,14 +152,14 @@ int read_fw(char * file_name) {
     
     if((fp= fopen(file_name, "rb"))==NULL)
     {
-        logger(level_strings[LOG_ERROR], "Error occured while opening file");
+        slog("Error occured while opening file");
         return 1;
     }
     
     while((c=getc(fp))!= EOF)
     {
         sprintf(buff_log, "%02x\n", c);
-        logger(level_strings[LOG_INFO], buff_log);
+        slog(buff_log);
     }
     
     fclose(fp);
@@ -163,7 +172,7 @@ void info_fw(char * file_name) {
     
     if((fp= fopen(file_name, "rb"))==NULL)
     {
-        logger(level_strings[LOG_ERROR], "Error occured while opening file");
+        slog("Error occured while opening file");
     }
     
     fstat(fileno(fp), &file_info);
@@ -182,7 +191,7 @@ void md5_fw(char * file_name){
     
     if((fp= fopen(file_name, "rb"))==NULL)
     {
-        logger(level_strings[LOG_ERROR], "Error occured while opening file");
+        slog("Error occured while opening file");
     }
     
     MD5_Init(&md_context);
