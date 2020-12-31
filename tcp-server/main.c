@@ -86,7 +86,11 @@ int main(int argc, char *argv[]) {
     while (1) {
         recv(connfd, buff_recv, sizeof(buff_recv), 0);
         
-        if (strncmp("ping", buff_recv, 4) == 0) {
+        char resp;
+        
+        resp = parse_json(buff_recv);
+        
+        if (&resp == "ping") {
             slog(resp_ping);
             send(connfd, &resp_ping, sizeof(resp_ping), 0);
         }
@@ -217,4 +221,21 @@ void time_fw(struct tm *u) {
     u = localtime(&timer);
     
     strftime(time_get_file, 12, "%d%m%Y%H%M", u);
+}
+
+
+char parse_json(char * buff_recv) {
+    struct json_object *obj;
+    struct json_object *cmd;
+    
+    char result[2];
+    
+    obj = json_tokener_parse(buff_recv);
+    
+    if(obj != NULL) {
+        json_object_object_get_ex(obj, "cmd", &cmd);
+        return *json_object_get_string(cmd);
+    }
+    
+    return *result;
 }

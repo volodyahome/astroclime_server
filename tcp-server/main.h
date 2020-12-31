@@ -36,6 +36,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <openssl/md5.h>
+#include <json-c/json.h>
 
 struct statm_t{
     unsigned long   size;      //total program size (same as VmSize in /proc/[pid]/status)
@@ -110,5 +111,7 @@ void md5_fw(char * file_name);
 
 //Get firmware request time
 void time_fw(struct tm *u);
+
+char parse_json(char * buff_recv);
 
 #endif /* main_h */

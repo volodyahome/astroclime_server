@@ -31,6 +31,7 @@
 		4362C70E258FF9BF000FAD6B /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
 		43C5D0E5258E48EA00430101 /* tcp-server */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "tcp-server"; sourceTree = BUILT_PRODUCTS_DIR; };
 		43C5D0E8258E48EA00430101 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		A66B1A54259DD81F00D39E47 /* json-c */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "json-c"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +64,7 @@
 		43C5D0E7258E48EA00430101 /* tcp-server */ = {
 			isa = PBXGroup;
 			children = (
+				A66B1A54259DD81F00D39E47 /* json-c */,
 				4362C70C258FE199000FAD6B /* fw */,
 				43C5D0E8258E48EA00430101 /* main.c */,
 				4362C705258F8FFD000FAD6B /* README.md */,
@@ -271,9 +273,12 @@
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = "";
 				LD_RUNPATH_SEARCH_PATHS = "";
-				LIBRARY_SEARCH_PATHS = "/opt/local/lib/openssl-1.0/";
+				LIBRARY_SEARCH_PATHS = "/opt/local/lib/**";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
-				OTHER_LDFLAGS = "-lcrypto";
+				OTHER_LDFLAGS = (
+					"-lcrypto",
+					"-ljson-c",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "";
 			};
@@ -290,9 +295,12 @@
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = "";
 				LD_RUNPATH_SEARCH_PATHS = "";
-				LIBRARY_SEARCH_PATHS = "/opt/local/lib/openssl-1.0/";
+				LIBRARY_SEARCH_PATHS = "/opt/local/lib/**";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
-				OTHER_LDFLAGS = "-lcrypto";
+				OTHER_LDFLAGS = (
+					"-lcrypto",
+					"-ljson-c",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "";
 			};
