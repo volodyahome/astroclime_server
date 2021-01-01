@@ -36,7 +36,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <openssl/md5.h>
-#include <json-c/json.h>
 
 struct statm_t{
     unsigned long   size;      //total program size (same as VmSize in /proc/[pid]/status)
@@ -69,10 +68,10 @@ char client_ip[16];
 unsigned int client_port;
 
 //Buffer for received data
-char buff_recv[512];
+char buff_recv[512] = {0};
 
 //Firmware path
-char * file_name = "/Users/testpc/Desktop/astroclime_server/tcp-server/fw/firmware";
+char * file_name = "/Users/bs/Desktop/tcp-server/tcp-server/fw/firmware";
 
 //Firmware info
 struct stat file_info;
@@ -82,23 +81,23 @@ unsigned char file_hash[MD5_DIGEST_LENGTH];
 char md5_str[33];
 
 //Firmware time
-char time_get_file[12];
+char time_get_file[12] = {0};
 struct tm *u;
 
 //Server statistics
 struct rusage usage;
 
 //Resp command ping
-char resp_ping[] = "{\"resp\":\"pong\",\"data\":[1,2,3]}\n";
+char resp_ping[512] = "{\"resp\":\"pong\",\"data\":[1,2,3]}";
 
 //Resp command fwinfo
-char resp_fwinfo[512] = "{\"fwsize\":%llu,\"fwmd5\":\"%s\",\"dt\":\"%s\"}\n";
+char resp_fwinfo[512] = "{\"fwsize\":%llu,\"fwmd5\":\"%s\",\"dt\":\"%s\"}";
 
 //Resp command stat
-char resp_stat[512] = "{\"conn\":1,\"mem_used\":7.4707794189453125}\n";
+char resp_stat[512] = "{\"conn\":1,\"mem_used\":7.4707794189453125}";
 
 //Resp command close
-char resp_close[] = "{\"resp\":\"bay\"}";
+char resp_close[512] = "{\"resp\":\"bay\"}";
 
 //Reading firmware
 int read_fw(char * file_name);
@@ -111,7 +110,5 @@ void md5_fw(char * file_name);
 
 //Get firmware request time
 void time_fw(struct tm *u);
-
-char parse_json(char * buff_recv);
 
 #endif /* main_h */

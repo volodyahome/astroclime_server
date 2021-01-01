@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		432EA5D2259E336A001925DD /* json.c in Sources */ = {isa = PBXBuildFile; fileRef = 432EA5D1259E336A001925DD /* json.c */; };
+		432EA5D7259F3C15001925DD /* ini.c in Sources */ = {isa = PBXBuildFile; fileRef = 432EA5D6259F3C15001925DD /* ini.c */; };
 		435AC7B82593BA70003FF644 /* logger.c in Sources */ = {isa = PBXBuildFile; fileRef = 435AC7B72593BA70003FF644 /* logger.c */; };
 		43C5D0E9258E48EA00430101 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 43C5D0E8258E48EA00430101 /* main.c */; };
 /* End PBXBuildFile section */
@@ -24,6 +26,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		432EA5D0259E336A001925DD /* json.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = json.h; sourceTree = "<group>"; };
+		432EA5D1259E336A001925DD /* json.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = json.c; sourceTree = "<group>"; };
+		432EA5D5259F3C15001925DD /* ini.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ini.h; sourceTree = "<group>"; };
+		432EA5D6259F3C15001925DD /* ini.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ini.c; sourceTree = "<group>"; };
 		435AC7B62593BA70003FF644 /* logger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = logger.h; sourceTree = "<group>"; };
 		435AC7B72593BA70003FF644 /* logger.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = logger.c; sourceTree = "<group>"; };
 		4362C705258F8FFD000FAD6B /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -31,7 +37,6 @@
 		4362C70E258FF9BF000FAD6B /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
 		43C5D0E5258E48EA00430101 /* tcp-server */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "tcp-server"; sourceTree = BUILT_PRODUCTS_DIR; };
 		43C5D0E8258E48EA00430101 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
-		A66B1A54259DD81F00D39E47 /* json-c */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "json-c"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,13 +69,16 @@
 		43C5D0E7258E48EA00430101 /* tcp-server */ = {
 			isa = PBXGroup;
 			children = (
-				A66B1A54259DD81F00D39E47 /* json-c */,
+				432EA5D0259E336A001925DD /* json.h */,
+				432EA5D1259E336A001925DD /* json.c */,
 				4362C70C258FE199000FAD6B /* fw */,
 				43C5D0E8258E48EA00430101 /* main.c */,
 				4362C705258F8FFD000FAD6B /* README.md */,
 				4362C70E258FF9BF000FAD6B /* main.h */,
 				435AC7B62593BA70003FF644 /* logger.h */,
 				435AC7B72593BA70003FF644 /* logger.c */,
+				432EA5D5259F3C15001925DD /* ini.h */,
+				432EA5D6259F3C15001925DD /* ini.c */,
 			);
 			path = "tcp-server";
 			sourceTree = "<group>";
@@ -133,6 +141,8 @@
 			files = (
 				43C5D0E9258E48EA00430101 /* main.c in Sources */,
 				435AC7B82593BA70003FF644 /* logger.c in Sources */,
+				432EA5D7259F3C15001925DD /* ini.c in Sources */,
+				432EA5D2259E336A001925DD /* json.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -22,6 +22,8 @@
 
 #include "main.h"
 #include "logger.h"
+#include "json.h"
+#include "ini.h"
 
 char buff_log[512];
 
@@ -31,7 +33,7 @@ int main(int argc, char *argv[]) {
     
     /* Setup configuration parameters */
     slgCfg.eColorFormat = SLOG_COLOR_TAG;
-    strcpy(slgCfg.sFilePath, "/Users/testpc/Desktop/astroclime_server/tcp-server/log/");
+    strcpy(slgCfg.sFilePath, "/Users/bs/Desktop/tcp-server/tcp-server/log/");
     strcpy(slgCfg.sFileName, "astroclime.log");
     slgCfg.nTraceTid = 0;
     slgCfg.nToScreen = 0;
@@ -86,61 +88,63 @@ int main(int argc, char *argv[]) {
     while (1) {
         recv(connfd, buff_recv, sizeof(buff_recv), 0);
         
-        char resp;
+        int resp;
         
         resp = parse_json(buff_recv);
         
-        if (&resp == "ping") {
-            slog(resp_ping);
-            send(connfd, &resp_ping, sizeof(resp_ping), 0);
-        }
-        
-        if (strncmp("stat", buff_recv, 4) == 0) {
-            getrusage(RUSAGE_SELF, &usage);
-            
-            sprintf(buff_log, "CPU time: \n1. %ld.%061d sec user,\n2. %ld.%061d sec system\n3. mem %ld", usage.ru_utime.tv_sec, usage.ru_utime.tv_usec, usage.ru_stime.tv_sec, usage.ru_stime.tv_usec, usage.ru_maxrss);
+        switch (resp) {
+            case PING:
+                slog(resp_ping);
+                send(connfd, &resp_ping, sizeof(resp_ping), 0);
+                
+                break;
+            case STAT:
+                getrusage(RUSAGE_SELF, &usage);
+                
+                sprintf(buff_log, "CPU time: \n1. %ld.%061d sec user,\n2. %ld.%061d sec system\n3. mem %ld", usage.ru_utime.tv_sec, usage.ru_utime.tv_usec, usage.ru_stime.tv_sec, usage.ru_stime.tv_usec, usage.ru_maxrss);
 
-            slog(buff_log);
+                slog(buff_log);
+                
+                if(send(connfd, resp_stat, sizeof(resp_stat) , 0) == -1) {
+                    slog("Error send fwinfo");
+                }
+                
+                break;
+            case FWINFO:
+                sprintf(buff_log, "%s", buff_recv);
+                slog(buff_log);
             
-            if(send(connfd, resp_stat, sizeof(resp_stat) , 0) == -1) {
-                slog("Error send fwinfo");
+                info_fw(file_name);
+                
+                md5_fw(file_name);
+                
+                time_fw(u);
+                
+                sprintf(buff_recv, resp_fwinfo, &file_info.st_size, &md5_str, &time_get_file);
+                slog(buff_recv);
+                
+                if(send(connfd, buff_recv, sizeof(buff_recv) , 0) == -1) {
+                    slog("Error send fwinfo");
+                }
+                
+                break;
+            case FWGET:
+                
+                break;
+            case CLOSE:
+                if(send(connfd, resp_close, sizeof(resp_close) , 0) == -1) {
+                    slog("Error send close");
+                }
+                
+                close(connfd);
+                slog("Connection with client closes");
+                
+                break;
+                
+            case OTHER:
+                slog("Another command sent");
+                break;
             }
-        }
-        
-        if (strncmp("fwinfo", buff_recv, 6) == 0) {
-            sprintf(buff_log, "%s", buff_recv);
-            slog(buff_log);
-        
-            info_fw(file_name);
-            
-            md5_fw(file_name);
-            
-            time_fw(u);
-            
-            sprintf(buff_recv, resp_fwinfo, &file_info.st_size, &md5_str, &time_get_file);
-            
-            slog(buff_recv);
-            
-            if(send(connfd, buff_recv, sizeof(buff_recv) , 0) == -1) {
-                slog("Error send fwinfo");
-            }
-        }
-        
-        if (strncmp("fwget", buff_recv, 5) == 0) {
-            
-        }
-        
-        if (strncmp("close", buff_recv, 5) == 0) {
-            
-            if(send(connfd, resp_close, sizeof(resp_close) , 0) == -1) {
-                slog("Error send close");
-            }
-            
-            sleep(1);
-            close(connfd);
-            slog("Connection with client closes");
-            break;
-        }
         
         bzero(buff_recv, sizeof(buff_recv));
     }
@@ -221,21 +225,4 @@ void time_fw(struct tm *u) {
     u = localtime(&timer);
     
     strftime(time_get_file, 12, "%d%m%Y%H%M", u);
-}
-
-
-char parse_json(char * buff_recv) {
-    struct json_object *obj;
-    struct json_object *cmd;
-    
-    char result[2];
-    
-    obj = json_tokener_parse(buff_recv);
-    
-    if(obj != NULL) {
-        json_object_object_get_ex(obj, "cmd", &cmd);
-        return *json_object_get_string(cmd);
-    }
-    
-    return *result;
 }
