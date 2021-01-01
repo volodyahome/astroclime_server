@@ -298,7 +298,7 @@ void slog_init(const char* pName, uint16_t nFlags, uint8_t nTdSafe)
     slog_sync_init(&g_slog);
 }
 
-void slog_destroy()
+void slog_destroy() // Needed only if the slog_init() function argument nTdSafe > 0
 {
     if (!g_slog.nTdSafe) return;
     pthread_mutex_destroy(&g_slog.mutex);

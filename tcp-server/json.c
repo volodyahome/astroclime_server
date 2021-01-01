@@ -26,7 +26,7 @@
 
 int parse_json(char * buff_recv) {
     struct json_object *obj;
-    struct json_object *cmd;
+    struct json_object *cmd = NULL;
     
     char response[9];
     
@@ -64,6 +64,8 @@ int parse_json(char * buff_recv) {
             result = 6;
         }
     } else {
+        free(cmd);
+        
         slog("{\"errco\":1,\"errdesc\":\"invalid command\"}");
     }
     

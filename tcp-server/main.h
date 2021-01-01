@@ -71,14 +71,14 @@ unsigned int client_port;
 char buff_recv[512] = {0};
 
 //Firmware path
-char * file_name = "/Users/bs/Desktop/tcp-server/tcp-server/fw/firmware";
+const char *firmware_file_name;
 
 //Firmware info
 struct stat file_info;
 
 //Firmware file hash
 unsigned char file_hash[MD5_DIGEST_LENGTH];
-char md5_str[33];
+char md5_str[33] = {0};
 
 //Firmware time
 char time_get_file[12] = {0};
@@ -100,13 +100,13 @@ char resp_stat[512] = "{\"conn\":1,\"mem_used\":7.4707794189453125}";
 char resp_close[512] = "{\"resp\":\"bay\"}";
 
 //Reading firmware
-int read_fw(char * file_name);
+int read_fw(const char * firmware_file_name);
 
 //Get info firmware
-void info_fw(char * file_name);
+void info_fw(const char * firmware_file_name);
 
 //Get md5 firmware file
-void md5_fw(char * file_name);
+void md5_fw(const char * firmware_file_name);
 
 //Get firmware request time
 void time_fw(struct tm *u);

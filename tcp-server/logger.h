@@ -65,24 +65,25 @@ extern "C" {
 
 #define SLOG_FLAGS_CHECK(c, f) (((c) & (f)) == (f))
 #define SLOG_FLAGS_ALL      255
+#define SLOG_BUFF_LOG       512
 
 /* Log level flags */
 typedef enum
 {
-    SLOG_NOTAG = (1 << 0),
-    SLOG_NOTE = (1 << 1),
-    SLOG_INFO = (1 << 2),
-    SLOG_WARN = (1 << 3),
-    SLOG_DEBUG = (1 << 4),
-    SLOG_TRACE = (1 << 5),
-    SLOG_ERROR = (1 << 6),
-    SLOG_FATAL = (1 << 7)
+    SLOG_NOTAG  =           (1 << 0),
+    SLOG_NOTE   =           (1 << 1),
+    SLOG_INFO   =           (1 << 2),
+    SLOG_WARN   =           (1 << 3),
+    SLOG_DEBUG  =           (1 << 4),
+    SLOG_TRACE  =           (1 << 5),
+    SLOG_ERROR  =           (1 << 6),
+    SLOG_FATAL  =           (1 << 7)
 } SLOG_FLAGS_E;
 
 /* Output coloring control flags */
 typedef enum
 {
-    SLOG_COLOR_DISABLE = 0,
+    SLOG_COLOR_DISABLE  =   0,
     SLOG_COLOR_TAG,
     SLOG_COLOR_FULL
 } SLOG_COLOR_FMT_E;
@@ -134,7 +135,6 @@ void slog_disable(SLOG_FLAGS_E eFlag);
 
 void slog_init(const char* pName, uint16_t nFlags, uint8_t nTdSafe);
 void slog_print(SLOG_FLAGS_E eFlag, uint8_t nNewLine, const char *pMsg, ...);
-void slog_destroy(); // Needed only if the slog_init() function argument nTdSafe > 0
 
 #ifdef __cplusplus
 }

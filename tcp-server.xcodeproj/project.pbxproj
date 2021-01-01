@@ -35,6 +35,7 @@
 		4362C705258F8FFD000FAD6B /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		4362C70C258FE199000FAD6B /* fw */ = {isa = PBXFileReference; lastKnownFileType = folder; path = fw; sourceTree = "<group>"; };
 		4362C70E258FF9BF000FAD6B /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
+		436ED8CA259F4A0A0074B59A /* cnf.ini */ = {isa = PBXFileReference; lastKnownFileType = text; path = cnf.ini; sourceTree = "<group>"; };
 		43C5D0E5258E48EA00430101 /* tcp-server */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "tcp-server"; sourceTree = BUILT_PRODUCTS_DIR; };
 		43C5D0E8258E48EA00430101 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -79,6 +80,7 @@
 				435AC7B72593BA70003FF644 /* logger.c */,
 				432EA5D5259F3C15001925DD /* ini.h */,
 				432EA5D6259F3C15001925DD /* ini.c */,
+				436ED8CA259F4A0A0074B59A /* cnf.ini */,
 			);
 			path = "tcp-server";
 			sourceTree = "<group>";
@@ -204,7 +206,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = /usr/local/include/openssl;
 				LIBRARY_SEARCH_PATHS = "";
-				MACOSX_DEPLOYMENT_TARGET = 11.1;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -263,7 +265,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = /usr/local/include/openssl;
 				LIBRARY_SEARCH_PATHS = "";
-				MACOSX_DEPLOYMENT_TARGET = 11.1;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				OTHER_LDFLAGS = "-lcrypto";

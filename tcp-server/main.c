@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 volodyahome
+ * Copyright (c) 2020 Vladimir Smirnov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -25,16 +25,26 @@
 #include "json.h"
 #include "ini.h"
 
-char buff_log[512];
+char buff_log[SLOG_BUFF_LOG];
 
 int main(int argc, char *argv[]) {
+    //CONF
+    ini_t *config = ini_load("/Users/bs/Desktop/tcp-server/tcp-server/cnf.ini");
+    
+    const char* server_host = ini_get(config, "server", "host");
+    const unsigned long server_port = strtoul(ini_get(config, "server", "port"), NULL, 10);
+    
+    const char *log_file_name = ini_get(config, "log", "file_name");
+    const char *log_file_path = ini_get(config, "log", "file_path");
+    
+    const char *firmware_file_name = ini_get(config, "firmware", "file_name");
+    
+    //LOG CFG
     SLogConfig slgCfg;
     slog_init(NULL, SLOG_INFO, 0);
-    
-    /* Setup configuration parameters */
     slgCfg.eColorFormat = SLOG_COLOR_TAG;
-    strcpy(slgCfg.sFilePath, "/Users/bs/Desktop/tcp-server/tcp-server/log/");
-    strcpy(slgCfg.sFileName, "astroclime.log");
+    strcpy(slgCfg.sFilePath, log_file_path);
+    strcpy(slgCfg.sFileName, log_file_name);
     slgCfg.nTraceTid = 0;
     slgCfg.nToScreen = 0;
     slgCfg.nToFile = 1;
@@ -42,6 +52,7 @@ int main(int argc, char *argv[]) {
     slgCfg.nFlags = SLOG_FLAGS_ALL;
     slog_config_set(&slgCfg);
     
+    //SOCKET SERVER
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
     
     if (listenfd == -1) {
@@ -57,8 +68,8 @@ int main(int argc, char *argv[]) {
     bzero(&serv_addr, sizeof(serv_addr));
     
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    serv_addr.sin_port = htons(5000);
+    inet_aton(server_host, &serv_addr.sin_addr);
+    serv_addr.sin_port = htons(server_port);
     
     if(bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1) {
         slog("Port reservation failed...");
@@ -114,9 +125,9 @@ int main(int argc, char *argv[]) {
                 sprintf(buff_log, "%s", buff_recv);
                 slog(buff_log);
             
-                info_fw(file_name);
+                info_fw(firmware_file_name);
                 
-                md5_fw(file_name);
+                md5_fw(firmware_file_name);
                 
                 time_fw(u);
                 
@@ -137,28 +148,30 @@ int main(int argc, char *argv[]) {
                 }
                 
                 close(connfd);
+                
                 slog("Connection with client closes");
+                        
+                exit(1); //BAD
                 
                 break;
                 
             case OTHER:
                 slog("Another command sent");
                 break;
-            }
-        
+        }
         bzero(buff_recv, sizeof(buff_recv));
     }
     
     return 0;
 }
 
-int read_fw(char * file_name) {
+int read_fw(const char * firmware_file_name) {
     FILE * fp;
     char c;
     
-    info_fw(file_name);
+    info_fw(firmware_file_name);
     
-    if((fp= fopen(file_name, "rb"))==NULL)
+    if((fp= fopen(firmware_file_name, "rb"))==NULL)
     {
         slog("Error occured while opening file");
         return 1;
@@ -175,10 +188,10 @@ int read_fw(char * file_name) {
     return 0;
 }
 
-void info_fw(char * file_name) {
+void info_fw(const char * firmware_file_name) {
     FILE * fp;
     
-    if((fp= fopen(file_name, "rb"))==NULL)
+    if((fp= fopen(firmware_file_name, "rb"))==NULL)
     {
         slog("Error occured while opening file");
     }
@@ -188,7 +201,7 @@ void info_fw(char * file_name) {
     fclose(fp);
 }
 
-void md5_fw(char * file_name){
+void md5_fw(const char * firmware_file_name){
     FILE *fp;
     
     MD5_CTX md_context;
@@ -197,7 +210,7 @@ void md5_fw(char * file_name){
     
     unsigned char data[1024];
     
-    if((fp= fopen(file_name, "rb"))==NULL)
+    if((fp= fopen(firmware_file_name, "rb"))==NULL)
     {
         slog("Error occured while opening file");
     }
