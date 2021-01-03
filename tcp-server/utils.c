@@ -22,6 +22,19 @@
 
 #include "utils.h"
 
+//Firmware info
+struct stat file_info;
+
+//Firmware time
+char time_get_file[TIME_GET_FILE] = {0};
+
+//Firmware file hash
+unsigned char file_hash[MD5_DIGEST_LENGTH];
+char md5_str[MD5_STR_SIZE] = {0};
+
+//Firmware part
+char *file_part;
+
 char *bin2hex(const unsigned char *bin, size_t len)
 {
     char  *out;
@@ -82,4 +95,84 @@ size_t hexs2bin(const char *hex, unsigned char **out)
         (*out)[i] = (b1 << 4) | b2;
     }
     return len;
+}
+
+char read_fw(const char * firmware_file_name, int start, int count) {
+    FILE    *fp;
+    char    buff[count];
+            
+    fp = fopen(firmware_file_name, "rb");
+    if (fp == NULL) {
+        slog_print(SLOG_ERROR, 1, "Error occured while opening file");
+    }
+    
+    if (fseek(fp, start, SEEK_SET) == 0) {
+        if (fgets(buff, count, fp) != NULL ) {
+            file_part = bin2hex((unsigned char *)buff, sizeof(buff));
+        }
+    } else {
+        slog_print(SLOG_ERROR, 1, "Сould not set the position pointer in file");
+    }
+    
+    fclose(fp);
+    
+    return *file_part;
+}
+
+struct stat info_fw(const char * firmware_file_name) {
+    FILE    *fp;
+    
+    fp = fopen(firmware_file_name, "rb");
+    if(fp == NULL)
+    {
+        slog_print(SLOG_ERROR, 1, "Error occured while opening file");
+    }
+    
+    fstat(fileno(fp), &file_info);
+    
+    fclose(fp);
+    
+    return file_info;
+}
+
+char md5_fw(const char * firmware_file_name){
+    FILE    *fp;
+    MD5_CTX md_context;
+    
+    unsigned long bytes;
+    
+    unsigned char data[1024];
+    
+    if((fp= fopen(firmware_file_name, "rb"))==NULL)
+    {
+        slog_print(SLOG_ERROR, 1, "Error occured while opening file");
+    }
+    
+    MD5_Init(&md_context);
+    while ((bytes = fread(data, 1, 1024, fp)) != 0) {
+        MD5_Update(&md_context, data, bytes);
+    }
+    
+    MD5_Final(file_hash, &md_context);
+    
+    for(int i = 0; i < MD5_DIGEST_LENGTH; ++i){
+        sprintf(&md5_str[i*2], "%02x", (unsigned int)file_hash[i]);
+    }
+    
+    fclose (fp);
+    
+    return *md5_str;
+}
+
+char time_fw(struct tm *u) {
+    
+    bzero(time_get_file, TIME_GET_FILE);
+    
+    const time_t timer = time(NULL);
+    
+    u = localtime(&timer);
+    
+    strftime(time_get_file, TIME_GET_FILE, "%d%m%Y%H%M", u);
+    
+    return *time_get_file;
 }

@@ -32,9 +32,6 @@ int main(int argc, char *argv[]) {
     //PROC ID
     pid = getpid();
     
-    //SIGNAL
-    signal(SIGINT, signal_int);
-    
     //CONF
     ini_t *config = ini_load(argv[1]); // argv[1] - path config file
     
@@ -95,188 +92,155 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
     
-    listen(sockfd, 0);
-    
-    connfd = accept(sockfd, (struct sockaddr*)NULL, NULL);
-    
-    if(connfd == -1) {
-        sprintf(buff_log, "- PID: %i - Connection failed", pid);
-        slog_print(SLOG_FATAL, 1, buff_log);
-        
-        close(connfd);
-        
+    if (listen(sockfd, 0) == -1) {
+        slog_print(SLOG_FATAL, 1, "Listen socket error");
         exit(EXIT_FAILURE);
-    } else {
-        socklen_t len = sizeof(client_addr);
-        getsockname(connfd, (struct sockaddr*)&client_addr, &len);
-        inet_ntop(AF_INET, &client_addr.sin_addr, client_ip, sizeof(client_ip));
-        client_port = ntohs(client_addr.sin_port);
-        
-        sprintf(buff_log, "- PID: %i - Connection success. FD: %i, IP: %s, Port: %d", pid, connfd, client_ip, client_port);
-        slog_print(SLOG_INFO, 1, buff_log);
+    }
+    
+    /* Initialise pthread attribute to create detached threads. */
+    if (pthread_attr_init(&pthread_attr) != 0) {
+        slog_print(SLOG_FATAL, 1, "pthread_attr_init");
+        exit(EXIT_FAILURE);
+    }
+    
+    if (pthread_attr_setdetachstate(&pthread_attr, PTHREAD_CREATE_DETACHED) != 0) {
+        slog_print(SLOG_FATAL, 1, "pthread_attr_setdetachstate");
+        exit(EXIT_FAILURE);
     }
     
     while (keep_run) {
-        ssize_t len_recv;
-        len_recv = recv(connfd, buff_recv, sizeof(buff_recv), 0);
-        
-        if(len_recv == -1) {
-            slog_print(SLOG_ERROR, 1, "Error recv data");
-            break;
+        pthread_arg = (pthread_arg_t *)malloc(sizeof *pthread_arg);
+        if (!pthread_arg) {
+            perror("malloc");
+            continue;
         }
         
-        if(len_recv > 0) {
-            int resp;
-            int fw_cb;
-            int fw_sb;
-            resp = parse_json(buff_recv);
+        /* Accept connection to client. */
+        client_address_len = sizeof pthread_arg->client_address;
+        
+        connfd = accept(sockfd, (struct sockaddr*)&pthread_arg->client_address, &client_address_len);
+        if(connfd == -1) {
+            sprintf(buff_log, "- PID: %i - Connection failed", pid);
+            slog_print(SLOG_FATAL, 1, buff_log);
+            free(pthread_arg);
+            continue;
+        } else {
+            socklen_t len = sizeof(pthread_arg->client_address);
+            getsockname(connfd, (struct sockaddr*)&pthread_arg->client_address, &len);
+            inet_ntop(AF_INET, &pthread_arg->client_address.sin_addr, client_ip, sizeof(client_ip));
+            client_port = ntohs(pthread_arg->client_address.sin_port);
             
-            switch (resp) {
-                case PING:
-                    if(send(connfd, resp_ping, sizeof(resp_ping) , 0) == -1) {
-                        slog_print(SLOG_ERROR, 1, "Error send ping");
-                    }
-                    
-                    break;
-                case STAT:
-                    getrusage(RUSAGE_SELF, &usage);
-                    
-                    sprintf(buff_log, "CPU time: \n1. %ld.%061d sec user,\n2. %ld.%061d sec system\n3. mem %ld", usage.ru_utime.tv_sec, usage.ru_utime.tv_usec, usage.ru_stime.tv_sec, usage.ru_stime.tv_usec, usage.ru_maxrss);
-
-                    slog_print(SLOG_INFO, 1, buff_log);
-                    
-                    if(send(connfd, resp_stat, sizeof(resp_stat) , 0) == -1) {
-                        slog_print(SLOG_ERROR, 1, "Error send fwinfo");
-                    }
-                    
-                    break;
-                case FWINFO:
-                    info_fw(firmware_file_name);
-                    md5_fw(firmware_file_name);
-                    
-                    time_fw(u);
-                    
-                    sprintf(buff_recv, resp_fwinfo, &file_info.st_size, &md5_str, &time_get_file);
-                    
-                    if(send(connfd, buff_recv, sizeof(buff_recv) , 0) == -1) {
-                        slog_print(SLOG_ERROR, 1, "Error send fwinfo");
-                    }
-                    
-                    break;
-                case FWGET:
-                    bzero(buff_recv, sizeof(buff_recv));
-                    
-                    fw_cb = get_fw_count_bytes();
-                    fw_sb = get_fw_start_byte();
-                    
-                    read_fw(firmware_file_name, fw_sb, fw_cb);
-                    
-                    sprintf(buff_recv, resp_fwget, file_part);
-                    
-                    if(send(connfd, buff_recv, sizeof(buff_recv) , 0) == -1) {
-                        slog_print(SLOG_ERROR, 1, "Error send fwget");
-                    }
-                    
-                    break;
-                case CLOSE:
-                    if(send(connfd, resp_close, sizeof(resp_close) , 0) == -1) {
-                        slog_print(SLOG_ERROR, 1, "Error send close");
-                    }
-                    
-                    close(connfd);
-                    
-                    slog_print(SLOG_INFO, 1, "Connection with client closes");
-                            
-                    exit(EXIT_SUCCESS); //BAD
-                    
-                    break;
-                case OTHER:
-                    slog_print(SLOG_INFO, 1, "Another command sent");
-
-                    break;
-            }
+            sprintf(buff_log, "- PID: %i - Connection success. FD: %i, IP: %s, Port: %d", pid, connfd, client_ip, client_port);
+            slog_print(SLOG_INFO, 1, buff_log);
         }
         
-        bzero(buff_recv, sizeof(buff_recv));
+        /* Initialise pthread argument. */
+        pthread_arg->connfd = connfd;
+        
+        /* Create thread to serve connection to client. */
+        if (pthread_create(&pthread, &pthread_attr, pthread_routine, (void *)pthread_arg) != 0) {
+            perror("pthread_create");
+            free(pthread_arg);
+            continue;
+        }
     }
     
     return 0;
 }
 
-void read_fw(const char * firmware_file_name, int start, int count) {
-    FILE        *fp;
-    char        buff[count];
-            
-    fp = fopen(firmware_file_name, "rb");
-    if (fp == NULL) {
-        slog_print(SLOG_ERROR, 1, "Error occured while opening file");
+void *pthread_routine(void *arg) {
+    pthread_arg_t *pthread_arg = (pthread_arg_t *)arg;
+    int connfd = pthread_arg->connfd;
+    
+    //Buffer for received data
+    char buff_recv[BUFF_SIZE] = {0};
+    
+    ssize_t len_recv;
+    len_recv = recv(connfd, buff_recv, sizeof(buff_recv), 0);
+    
+    if(len_recv == -1) {
+        slog_print(SLOG_ERROR, 1, "Error recv data");
     }
     
-    if (fseek(fp, start, SEEK_SET) == 0) {
-        if (fgets(buff, count, fp) != NULL ) {
-            file_part = bin2hex((unsigned char *)buff, sizeof(buff));
+    if(len_recv > 0) {
+        
+        int resp;
+        int fw_cb;
+        int fw_sb;
+        struct stat ifw;
+        char md5_str;
+        char time_get_file;
+        
+        resp = parse_json(buff_recv);
+        
+        switch (resp) {
+            case PING:
+                if(send(connfd, resp_ping, sizeof(resp_ping) , 0) == -1) {
+                    slog_print(SLOG_ERROR, 1, "Error send ping");
+                }
+                
+                break;
+            case STAT:
+                getrusage(RUSAGE_SELF, &usage);
+                
+                sprintf(buff_recv, resp_stat, usage.ru_maxrss);
+                
+                if(send(connfd, buff_recv, sizeof(buff_recv) , 0) == -1) {
+                    slog_print(SLOG_ERROR, 1, "Error send stat");
+                }
+                
+                break;
+            case FWINFO:
+                ifw = info_fw(firmware_file_name);
+                
+                md5_str = md5_fw(firmware_file_name);
+                
+                time_get_file = time_fw(u);
+                
+                sprintf(buff_recv, resp_fwinfo, ifw.st_size, md5_str, time_get_file);
+                
+                if(send(connfd, buff_recv, sizeof(buff_recv) , 0) == -1) {
+                    slog_print(SLOG_ERROR, 1, "Error send fwinfo");
+                }
+                
+                break;
+            case FWGET:
+                bzero(buff_recv, sizeof(buff_recv));
+                
+                char fp;
+                
+                fw_cb = get_fw_count_bytes();
+                fw_sb = get_fw_start_byte();
+                
+                fp = read_fw(firmware_file_name, fw_sb, fw_cb);
+                
+                sprintf(buff_recv, resp_fwget, fp);
+                
+                if(send(connfd, buff_recv, sizeof(buff_recv) , 0) == -1) {
+                    slog_print(SLOG_ERROR, 1, "Error send fwget");
+                }
+                
+                break;
+            case CLOSE:
+                if(send(connfd, resp_close, sizeof(resp_close) , 0) == -1) {
+                    slog_print(SLOG_ERROR, 1, "Error send close");
+                }
+                
+                close(connfd);
+                
+                slog_print(SLOG_INFO, 1, "Connection with client closes");
+                        
+                exit(EXIT_SUCCESS); //BAD
+                
+                break;
+            case OTHER:
+                slog_print(SLOG_INFO, 1, "Another command sent");
+
+                break;
         }
-    } else {
-        slog_print(SLOG_ERROR, 1, "Сould not set the position pointer in file");
     }
     
-    fclose(fp);
-}
+    bzero(buff_recv, sizeof(buff_recv));
 
-void info_fw(const char * firmware_file_name) {
-    FILE    *fp;
-    
-    if((fp= fopen(firmware_file_name, "rb"))==NULL)
-    {
-        slog_print(SLOG_ERROR, 1, "Error occured while opening file");
-    }
-    
-    fstat(fileno(fp), &file_info);
-    
-    fclose(fp);
-}
-
-void md5_fw(const char * firmware_file_name){
-    FILE    *fp;
-    MD5_CTX md_context;
-    
-    unsigned long bytes;
-    
-    unsigned char data[1024];
-    
-    if((fp= fopen(firmware_file_name, "rb"))==NULL)
-    {
-        slog_print(SLOG_ERROR, 1, "Error occured while opening file");
-    }
-    
-    MD5_Init(&md_context);
-    while ((bytes = fread(data, 1, 1024, fp)) != 0) {
-        MD5_Update(&md_context, data, bytes);
-    }
-    
-    MD5_Final(file_hash, &md_context);
-    
-    for(int i = 0; i < MD5_DIGEST_LENGTH; ++i){
-        sprintf(&md5_str[i*2], "%02x", (unsigned int)file_hash[i]);
-    }
-    
-    fclose (fp);
-}
-
-void time_fw(struct tm *u) {
-    
-    bzero(time_get_file, 12);
-    
-    const time_t timer = time(NULL);
-    
-    u = localtime(&timer);
-    
-    strftime(time_get_file, 12, "%d%m%Y%H%M", u);
-}
-
-void signal_int(int sig_num) {
-    keep_run = 0;
-    
-    sprintf(buff_log, "INTERUPT signal - ^c (break): %i", sig_num);
-    slog_print(SLOG_INFO, 1, buff_log);
+    return NULL;
 }

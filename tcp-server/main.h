@@ -28,20 +28,24 @@
 #include <time.h>
 #include <unistd.h>
 #include <signal.h>
+#include <pthread.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <sys/stat.h>
 #include <sys/resource.h>
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <openssl/md5.h>
 
 #include "logger.h"
 #include "json.h"
 #include "ini.h"
 #include "utils.h"
+
+#define SERVER_VERSION "0.1.1"
+
+#define CLIENT_IP_SIZE  16
+#define BUFF_SIZE       512
 
 //Process id
 pid_t pid;
@@ -61,76 +65,65 @@ struct statm_t{
 };
 
 //Buffer log
-char buff_log[SLOG_BUFF_LOG];
+char buff_log[BUFF_SIZE];
 
 //Keep run
 int keep_run = 1;
-//Signal handler
-void signal_int(int sig_num);
 
+//Socket
 int sockfd = 0;
 
+//Connect
 int connfd = 0;
 
+//Count connects
 int count_conn = 0;
 
 //Server info and client info
 struct sockaddr_in serv_addr, client_addr;
 
 //Ip address of the connected client
-char client_ip[16];
+char client_ip[CLIENT_IP_SIZE];
 
 //Port of the connected client
 unsigned int client_port;
 
-//Buffer for received data
-char buff_recv[512] = {0};
-
 //Firmware path
 const char *firmware_file_name;
 
-//Firmware info
-struct stat file_info;
-
-//Firmware file hash
-unsigned char file_hash[MD5_DIGEST_LENGTH];
-char md5_str[33] = {0};
-
-//Firmware time
-char time_get_file[12] = {0};
 struct tm *u;
-
-//Firmware part
-char *file_part;
 
 //Server statistics
 struct rusage usage;
 
 //Resp command ping
-char resp_ping[512] = "{\"resp\":\"pong\",\"data\":[1,2,3]}";
+char resp_ping[BUFF_SIZE]   =   "{\"resp\":\"pong\",\"data\":[1,2,3]}";
 
 //Resp command fwinfo
-char resp_fwinfo[512] = "{\"fwsize\":%llu,\"fwmd5\":\"%s\",\"dt\":\"%s\"}";
+char resp_fwinfo[BUFF_SIZE] =   "{\"fwsize\":%llu,\"fwmd5\":\"%s\",\"dt\":\"%s\"}";
 
 //Resp comand fwget
-char resp_fwget[512] = "{\"buff\":\"%s\"}";
+char resp_fwget[BUFF_SIZE]  =   "{\"buff\":\"%s\"}";
 
 //Resp command stat
-char resp_stat[512] = "{\"conn\":1,\"mem_used\":7.4707794189453125}";
+char resp_stat[BUFF_SIZE]   =   "{\"conn\":1,\"mem_used\":%ld\"}";
 
 //Resp command close
-char resp_close[512] = "{\"resp\":\"bay\"}";
+char resp_close[BUFF_SIZE]  =   "{\"resp\":\"bay\"}";
 
-//Reading firmware
-void read_fw(const char * firmware_file_name, int offset, int origin);
+pthread_attr_t pthread_attr;
 
-//Get info firmware
-void info_fw(const char * firmware_file_name);
+typedef struct pthread_arg_t {
+    int connfd;
+    struct sockaddr_in client_address;
+} pthread_arg_t;
 
-//Get md5 firmware file
-void md5_fw(const char * firmware_file_name);
+pthread_arg_t *pthread_arg;
 
-//Get firmware request time
-void time_fw(struct tm *u);
+socklen_t client_address_len;
+
+pthread_t pthread;
+
+void *pthread_routine(void *arg);
 
 #endif /* MAIN_H */
