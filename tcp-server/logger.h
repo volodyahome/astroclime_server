@@ -20,12 +20,8 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __SLOG_H__
-#define __SLOG_H__
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef LOGGER_H
+#define LOGGER_H
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
@@ -136,8 +132,4 @@ void slog_disable(SLOG_FLAGS_E eFlag);
 void slog_init(const char* pName, uint16_t nFlags, uint8_t nTdSafe);
 void slog_print(SLOG_FLAGS_E eFlag, uint8_t nNewLine, const char *pMsg, ...);
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* __SLOG_H__ */
+#endif /* LOGGER_H */

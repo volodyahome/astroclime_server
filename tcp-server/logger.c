@@ -196,8 +196,8 @@ static void slog_create_output(char* pOut, size_t nSize, const char* pStr, SLOG_
     const SLogDate *pDate = &g_slog.slogDate;
     char sDate[SLOG_DATE_MAX];
 
-    snprintf(sDate, sizeof(sDate), "%04d.%02d.%02d-%02d:%02d:%02d.%02d", pDate->nYear,
-        pDate->nMonth, pDate->nDay, pDate->nHour, pDate->nMin, pDate->nSec, pDate->nUsec);
+    snprintf(sDate, sizeof(sDate), "%02d-%02d-%04d %02d:%02d:%02d.%02d", pDate->nDay,
+        pDate->nMonth, pDate->nYear, pDate->nHour, pDate->nMin, pDate->nSec, pDate->nUsec);
 
     char sTid[SLOG_TAG_MAX];
     char sTag[SLOG_TAG_MAX];
