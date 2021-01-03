@@ -19,14 +19,15 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-#ifndef main_h
-#define main_h
+#ifndef MAIN_H
+#define MAIN_H
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -36,6 +37,18 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <openssl/md5.h>
+
+#include "logger.h"
+#include "json.h"
+#include "ini.h"
+#include "utils.h"
+
+//Process id
+pid_t pid;
+
+//Timeout send and recv data
+struct timeval tv_send;
+struct timeval tv_recv;
 
 struct statm_t{
     unsigned long   size;      //total program size (same as VmSize in /proc/[pid]/status)
@@ -47,12 +60,15 @@ struct statm_t{
     unsigned long   dt;        //dirty pages (unused in Linux 2.6)
 };
 
-//Log levels
-char *level_strings[] = {
-    "DEBUG", "INFO", "ERROR",
-};
+//Buffer log
+char buff_log[SLOG_BUFF_LOG];
 
-int listenfd = 0;
+//Keep run
+int keep_run = 1;
+//Signal handler
+void signal_int(int sig_num);
+
+int sockfd = 0;
 
 int connfd = 0;
 
@@ -84,6 +100,9 @@ char md5_str[33] = {0};
 char time_get_file[12] = {0};
 struct tm *u;
 
+//Firmware part
+char *file_part;
+
 //Server statistics
 struct rusage usage;
 
@@ -93,6 +112,9 @@ char resp_ping[512] = "{\"resp\":\"pong\",\"data\":[1,2,3]}";
 //Resp command fwinfo
 char resp_fwinfo[512] = "{\"fwsize\":%llu,\"fwmd5\":\"%s\",\"dt\":\"%s\"}";
 
+//Resp comand fwget
+char resp_fwget[512] = "{\"buff\":\"%s\"}";
+
 //Resp command stat
 char resp_stat[512] = "{\"conn\":1,\"mem_used\":7.4707794189453125}";
 
@@ -100,7 +122,7 @@ char resp_stat[512] = "{\"conn\":1,\"mem_used\":7.4707794189453125}";
 char resp_close[512] = "{\"resp\":\"bay\"}";
 
 //Reading firmware
-int read_fw(const char * firmware_file_name);
+void read_fw(const char * firmware_file_name, int offset, int origin);
 
 //Get info firmware
 void info_fw(const char * firmware_file_name);
@@ -111,4 +133,4 @@ void md5_fw(const char * firmware_file_name);
 //Get firmware request time
 void time_fw(struct tm *u);
 
-#endif /* main_h */
+#endif /* MAIN_H */

@@ -20,11 +20,14 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef json_h
-#define json_h
+#ifndef JSON_H
+#define JSON_H
 
 #include <stdio.h>
+#include <string.h>
 #include <json-c/json.h>
+
+#include "logger.h"
 
 enum Command {
     PING,       //0
@@ -40,4 +43,8 @@ enum Command {
 //Parse recv JSON
 int parse_json(char * buff_recv);
 
-#endif /* json_h */
+int get_fw_count_bytes(void);
+
+int get_fw_start_byte(void);
+
+#endif /* JSON_H */
