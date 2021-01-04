@@ -40,8 +40,23 @@ enum Command {
     OTHER       //7
 };
 
+enum Error {
+    INVALID_COMMAND = 1,    //1
+    NO_SUCH_FILE,           //2
+    NOT_READ_FILE,          //3
+    EMPTY_REQUEST,          //4
+    COMMAND_NOT_FOUND,      //5
+    DEFAULT_ERROR           //6
+};
+
 //Parse recv JSON
 int parse_json(char * buff_recv);
+
+//Create JSON answer
+const char *create_json(void);
+
+//Create JSON error
+const char *error_json(int err);
 
 int get_fw_count_bytes(void);
 

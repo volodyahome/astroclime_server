@@ -45,7 +45,7 @@
 #define SERVER_VERSION "0.1.1"
 
 #define CLIENT_IP_SIZE  16
-#define BUFF_SIZE       512
+#define BUFF_SIZE       1024
 
 //Process id
 pid_t pid;
@@ -72,9 +72,6 @@ int keep_run = 1;
 
 //Socket
 int sockfd = 0;
-
-//Connect
-int connfd = 0;
 
 //Count connects
 int count_conn = 0;
@@ -106,10 +103,7 @@ char resp_fwinfo[BUFF_SIZE] =   "{\"fwsize\":%llu,\"fwmd5\":\"%s\",\"dt\":\"%s\"
 char resp_fwget[BUFF_SIZE]  =   "{\"buff\":\"%s\"}";
 
 //Resp command stat
-char resp_stat[BUFF_SIZE]   =   "{\"conn\":1,\"mem_used\":%ld\"}";
-
-//Resp command close
-char resp_close[BUFF_SIZE]  =   "{\"resp\":\"bay\"}";
+char resp_stat[BUFF_SIZE]   =   "{\"conn\":%d,\"mem_used\":%ld\"}";
 
 pthread_attr_t pthread_attr;
 

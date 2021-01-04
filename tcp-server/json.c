@@ -44,8 +44,6 @@ int parse_json(char * buff_recv) {
         
         sprintf(response, "%s", json_object_get_string(cmd));
         
-        slog_print(SLOG_INFO, 1, buff_recv);
-        
         if (strcmp("ping", response) == 0) {
             result = 0;
         }
@@ -81,13 +79,74 @@ int parse_json(char * buff_recv) {
         }
     } else {
         free(cmd);
-        slog_print(SLOG_ERROR, 1, "{\"errco\":1,\"errdesc\":\"invalid command\"}");
     }
     
     free(parsed_json);
     free(cmd);
     
     return result;
+}
+
+const char *create_json() {
+    
+    const char *response;
+        
+    json_object * jobj = json_object_new_object();
+    
+    json_object *resp = json_object_new_string("bay");
+    
+    json_object_object_add(jobj,"resp", resp);
+            
+    response = json_object_to_json_string_ext(jobj, JSON_C_TO_STRING_PLAIN);
+    
+    json_object_put(jobj);
+        
+    return response;
+}
+
+const char *error_json(int err) {
+    
+    const char *response;
+    
+    json_object *jobj = json_object_new_object();
+    
+    json_object *errco;
+    json_object *errdesc;
+    
+    switch (err) {
+        case INVALID_COMMAND:
+            errco = json_object_new_int(INVALID_COMMAND);
+            errdesc = json_object_new_string("invalid command");
+            break;
+        case NO_SUCH_FILE:
+            errco = json_object_new_int(NO_SUCH_FILE);
+            errdesc = json_object_new_string("no such file");
+            break;
+        case NOT_READ_FILE:
+            errco = json_object_new_int(NOT_READ_FILE);
+            errdesc = json_object_new_string("not read file");
+            break;
+        case EMPTY_REQUEST:
+            errco = json_object_new_int(EMPTY_REQUEST);
+            errdesc = json_object_new_string("empty request");
+            break;
+        case COMMAND_NOT_FOUND:
+            errco = json_object_new_int(COMMAND_NOT_FOUND);
+            errdesc = json_object_new_string("command not found");
+            break;
+        default:
+            errco = json_object_new_int(DEFAULT_ERROR);
+            errdesc = json_object_new_string("unknown error");
+    }
+    
+    json_object_object_add(jobj, "errco", errco);
+    json_object_object_add(jobj, "errdesc", errdesc);
+    
+    response = json_object_to_json_string_ext(jobj, JSON_C_TO_STRING_PLAIN);
+    
+    json_object_put(jobj);
+        
+    return response;
 }
 
 int get_fw_count_bytes(void) {
