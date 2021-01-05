@@ -42,6 +42,8 @@ int hexchr2bin(const char hex, char *out);
 
 size_t hexs2bin(const char *hex, unsigned char **out);
 
+char md5_str[MD5_STR_SIZE] = {0};
+
 //Reading firmware
 char read_fw(const char *firmware_file_name, int offset, int origin);
 
@@ -49,7 +51,7 @@ char read_fw(const char *firmware_file_name, int offset, int origin);
 struct stat info_fw(const char *firmware_file_name);
 
 //Get md5 firmware file
-char md5_fw(const char *firmware_file_name);
+void md5_fw(const char *firmware_file_name);
 
 //Get firmware request time
 char time_fw(struct tm *u);

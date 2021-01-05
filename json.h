@@ -53,7 +53,7 @@ enum Error {
 int parse_json(char * buff_recv);
 
 //Create JSON answer
-const char *create_json(void);
+const char *answer_json(int answer);
 
 //Create JSON error
 const char *error_json(int err);

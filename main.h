@@ -93,17 +93,8 @@ struct tm *u;
 //Server statistics
 struct rusage usage;
 
-//Resp command ping
-char resp_ping[BUFF_SIZE]   =   "{\"resp\":\"pong\",\"data\":[1,2,3]}";
-
-//Resp command fwinfo
-char resp_fwinfo[BUFF_SIZE] =   "{\"fwsize\":%llu,\"fwmd5\":\"%s\",\"dt\":\"%s\"}";
-
 //Resp comand fwget
 char resp_fwget[BUFF_SIZE]  =   "{\"buff\":\"%s\"}";
-
-//Resp command stat
-char resp_stat[BUFF_SIZE]   =   "{\"conn\":%d,\"mem_used\":%ld\"}";
 
 pthread_attr_t pthread_attr;
 

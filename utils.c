@@ -30,7 +30,6 @@ char time_get_file[TIME_GET_FILE] = {0};
 
 //Firmware file hash
 unsigned char file_hash[MD5_DIGEST_LENGTH];
-char md5_str[MD5_STR_SIZE] = {0};
 
 //Firmware part
 char *file_part;
@@ -135,7 +134,7 @@ struct stat info_fw(const char * firmware_file_name) {
     return file_info;
 }
 
-char md5_fw(const char * firmware_file_name){
+void md5_fw(const char * firmware_file_name){
     FILE    *fp;
     MD5_CTX md_context;
     
@@ -160,8 +159,6 @@ char md5_fw(const char * firmware_file_name){
     }
     
     fclose (fp);
-    
-    return *md5_str;
 }
 
 char time_fw(struct tm *u) {

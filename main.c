@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
     const char *log_file_name = ini_get(config, "log", "file_name");
     const char *log_file_path = ini_get(config, "log", "file_path");
     
-    const char *firmware_file_name = ini_get(config, "firmware", "file_name");
+    firmware_file_name = ini_get(config, "firmware", "file_name");
     
     //LOG CFG
     SLogConfig slgCfg;
@@ -172,26 +172,41 @@ void *pthread_routine(void *arg) {
             int fw_cb;
             int fw_sb;
             struct stat ifw;
-            char md5_str;
             char time_get_file;
+            char fp;
+            
+            //Resp command
+            const char *resp_ping;
             const char *resp_close;
             const char *resp_other;
+            const char *resp_stat;
+            const char *resp_fwinfo;
             
             sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Recv data: %s", pid, client_ip, client_port, buff_recv);
             slog_print(SLOG_INFO, 1, buff_log);
             
             resp = parse_json(buff_recv);
             
+            bzero(buff_recv, sizeof(buff_recv));
+            
             switch (resp) {
                 case PING:
-                    if(send(connfd, resp_ping, sizeof(resp_ping) , 0) == -1) {
+                    
+                    resp_ping = answer_json(PING);
+                    
+                    sprintf(buff_recv, "%s", resp_ping);
+                    
+                    if(send(connfd, buff_recv, sizeof(buff_recv) , 0) == -1) {
                         sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Error: %s", pid, client_ip, client_port, "Error send ping");
                         slog_print(SLOG_ERROR, 1, buff_log);
                     }
                     
                     break;
                 case STAT:
+                    
                     getrusage(RUSAGE_SELF, &usage);
+                    
+                    resp_stat = answer_json(STAT);
                     
                     sprintf(buff_recv, resp_stat, count_conn, usage.ru_maxrss);
                     
@@ -202,9 +217,12 @@ void *pthread_routine(void *arg) {
                     
                     break;
                 case FWINFO:
+                    
+                    resp_fwinfo = answer_json(FWINFO);
+                    
                     ifw = info_fw(firmware_file_name);
                     
-                    md5_str = md5_fw(firmware_file_name);
+                    md5_fw(firmware_file_name);
                     
                     time_get_file = time_fw(u);
                     
@@ -217,9 +235,6 @@ void *pthread_routine(void *arg) {
                     
                     break;
                 case FWGET:
-                    bzero(buff_recv, sizeof(buff_recv));
-                    
-                    char fp;
                     
                     fw_cb = get_fw_count_bytes();
                     fw_sb = get_fw_start_byte();
@@ -235,9 +250,8 @@ void *pthread_routine(void *arg) {
                     
                     break;
                 case CLOSE:
-                    bzero(buff_recv, sizeof(buff_recv));
                     
-                    resp_close = create_json();
+                    resp_close = answer_json(CLOSE);
                     
                     sprintf(buff_recv, "%s", resp_close);
                     
@@ -257,7 +271,6 @@ void *pthread_routine(void *arg) {
                                             
                     break;
                 case OTHER:
-                    bzero(buff_recv, sizeof(buff_recv));
                     
                     resp_other = error_json(INVALID_COMMAND);
                     
