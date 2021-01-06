@@ -164,7 +164,6 @@ int main(int argc, char *argv[]) {
         //continue;
     }
     
-    return 0;
 }
 
 void *pthread_routine(void *arg) {
