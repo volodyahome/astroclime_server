@@ -30,17 +30,18 @@ int main(int argc, char *argv[]) {
     }
     
     pid_t parpid;
-    
+
     parpid=fork();
-    
-    if(parpid < 0) {                    //--здесь мы пытаемся создать дочерний процесс главного процесса, точную копию исполняемой программы
-        printf("\ncan't fork");         //--если нам по какойлибо причине это сделать не удается выходим с ошибкой.
-        exit(EXIT_FAILURE);             //--здесь, кто не совсем понял нужно обратится к man fork
-    } else if(parpid != 0) {            //--если дочерний процесс уже существует
-        exit(EXIT_SUCCESS);             //--генерируем немедленный выход из программы(зачем нам еще одна копия программы)
+
+    if(parpid < 0) {
+        printf("\ncan't fork");
+        exit(EXIT_FAILURE);
     }
-    
-    setsid();                           //--перевод нашего дочернего процесса в новую сесию
+    else if(parpid != 0) {
+        exit(EXIT_SUCCESS);
+    }
+
+    setsid();
     
     
     //PROC ID
@@ -125,7 +126,8 @@ int main(int argc, char *argv[]) {
     while(keep_run) {
         pthread_arg = (pthread_arg_t *)malloc(sizeof *pthread_arg);
         if (!pthread_arg) {
-            perror("malloc");
+            slog_print(SLOG_FATAL, 1, "Error malloc pthread_arg");
+            
             continue;
         }
         
@@ -133,6 +135,7 @@ int main(int argc, char *argv[]) {
         client_address_len = sizeof pthread_arg->client_address;
         
         pthread_arg->connfd = accept(sockfd, (struct sockaddr*)&pthread_arg->client_address, &client_address_len);
+        
         if(pthread_arg->connfd == -1) {
             sprintf(buff_log, "- PID: %i - Connection failed", pid);
             slog_print(SLOG_FATAL, 1, buff_log);
@@ -169,9 +172,12 @@ void *pthread_routine(void *arg) {
     int connfd = pthread_arg->connfd;
     int keep_run = 1;
     
+    //Buffer for received data
+    char buff_recv[BUFF_SIZE] = {0};
+    
     while (keep_run) {
-        //Buffer for received data
-        char buff_recv[BUFF_SIZE] = {0};
+        
+        bzero(buff_log, sizeof(buff_log));
         
         ssize_t len_recv;
         len_recv = recv(connfd, buff_recv, sizeof(buff_recv), 0);
