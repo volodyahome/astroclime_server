@@ -25,9 +25,23 @@
 int main(int argc, char *argv[]) {
     //Change exist two arg
     if(argc < 2) {
-        printf("Enter the path to the config file .ini");
+        printf("Enter the path to the config file .ini\n");
         exit(EXIT_SUCCESS);
     }
+    
+    pid_t parpid;
+    
+    parpid=fork();
+    
+    if(parpid < 0)                  //--здесь мы пытаемся создать дочерний процесс главного процесса (масло масляное в прямом смысле)
+    {                               //--точную копию исполняемой программы
+        printf("\ncan't fork");         //--если нам по какойлибо причине это сделать не удается выходим с ошибкой.
+        exit(1);                        //--здесь, кто не совсем понял нужно обратится к man fork
+    } else if(parpid != 0) {            //--если дочерний процесс уже существует
+        exit(EXIT_SUCCESS);                        //--генерируем немедленный выход из программы(зачем нам еще одна копия программы)
+    }
+    
+    setsid();                       //--перевод нашего дочернего процесса в новую сесию
     
     //PROC ID
     pid = getpid();
