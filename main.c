@@ -217,6 +217,8 @@ void *pthread_routine(void *arg) {
                         slog_print(SLOG_ERROR, 1, buff_log);
                     }
                     
+                    resp_ping = NULL;
+                    
                     break;
                 case STAT:
                     
