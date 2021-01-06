@@ -33,8 +33,9 @@
 
 #include "logger.h"
 
-#define MD5_STR_SIZE    33
-#define TIME_GET_FILE   12
+#define MD5_STR_SIZE        33
+#define FW_RECEIPT_TIME     12
+#define MAXSTRINGLEN        512
 
 char *bin2hex(const unsigned char *bin, size_t len);
 
@@ -42,18 +43,16 @@ int hexchr2bin(const char hex, char *out);
 
 size_t hexs2bin(const char *hex, unsigned char **out);
 
-char md5_str[MD5_STR_SIZE] = {0};
-
 //Reading firmware
-char read_fw(const char *firmware_file_name, int offset, int origin);
+char *read_fw(const char *firmware_file_name, int start, int count);
 
 //Get info firmware
 struct stat info_fw(const char *firmware_file_name);
 
 //Get md5 firmware file
-void md5_fw(const char *firmware_file_name);
+char *md5_fw(const char *firmware_file_name);
 
 //Get firmware request time
-char time_fw(struct tm *u);
+char *time_fw(struct tm *u);
 
 #endif /* utils_h */

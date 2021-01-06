@@ -36,7 +36,7 @@ enum Command {
     STAT,       //3
     FWINFO,     //4
     FWGET,      //5
-    ANALYTICS,  //6
+    ANALYTICS,  //6 Not implemented!
     OTHER       //7
 };
 

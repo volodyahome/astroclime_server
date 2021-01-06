@@ -26,17 +26,19 @@
 struct stat file_info;
 
 //Firmware time
-char time_get_file[TIME_GET_FILE] = {0};
+char fw_receipt_time[FW_RECEIPT_TIME] = {0};
 
 //Firmware file hash
 unsigned char file_hash[MD5_DIGEST_LENGTH];
 
 //Firmware part
-char *file_part;
+char *file_part = NULL;
+
+char md5_hash[MD5_DIGEST_LENGTH] = {0};
 
 char *bin2hex(const unsigned char *bin, size_t len)
 {
-    char  *out;
+    char    *out;
     size_t  i;
 
     if (bin == NULL || len == 0)
@@ -72,10 +74,10 @@ int hexchr2bin(const char hex, char *out)
 
 size_t hexs2bin(const char *hex, unsigned char **out)
 {
-    size_t len;
-    char   b1;
-    char   b2;
-    size_t i;
+    size_t  len;
+    char    b1;
+    char    b2;
+    size_t  i;
 
     if (hex == NULL || *hex == '\0' || out == NULL)
         return 0;
@@ -96,9 +98,15 @@ size_t hexs2bin(const char *hex, unsigned char **out)
     return len;
 }
 
-char read_fw(const char * firmware_file_name, int start, int count) {
+char *read_fw(const char * firmware_file_name, int start, int count) {
     FILE    *fp;
     char    buff[count];
+    
+    file_part = malloc(sizeof *file_part*MAXSTRINGLEN);
+    
+    if(file_part == NULL) {
+        slog_print(SLOG_ERROR, 1, "Error in malloc method read_fw");
+    }
             
     fp = fopen(firmware_file_name, "rb");
     if (fp == NULL) {
@@ -114,8 +122,8 @@ char read_fw(const char * firmware_file_name, int start, int count) {
     }
     
     fclose(fp);
-    
-    return *file_part;
+        
+    return file_part;
 }
 
 struct stat info_fw(const char * firmware_file_name) {
@@ -134,7 +142,7 @@ struct stat info_fw(const char * firmware_file_name) {
     return file_info;
 }
 
-void md5_fw(const char * firmware_file_name){
+char *md5_fw(const char * firmware_file_name){
     FILE    *fp;
     MD5_CTX md_context;
     
@@ -155,21 +163,21 @@ void md5_fw(const char * firmware_file_name){
     MD5_Final(file_hash, &md_context);
     
     for(int i = 0; i < MD5_DIGEST_LENGTH; ++i){
-        sprintf(&md5_str[i*2], "%02x", (unsigned int)file_hash[i]);
+        sprintf(&md5_hash[i*2], "%02x", (unsigned int)file_hash[i]);
     }
     
     fclose (fp);
+    
+    return md5_hash;
 }
 
-char time_fw(struct tm *u) {
-    
-    bzero(time_get_file, TIME_GET_FILE);
+char *time_fw(struct tm *u) {
     
     const time_t timer = time(NULL);
     
     u = localtime(&timer);
     
-    strftime(time_get_file, TIME_GET_FILE, "%d%m%Y%H%M", u);
+    strftime(fw_receipt_time, FW_RECEIPT_TIME, "%d%m%Y%H%M", u);
     
-    return *time_get_file;
+    return fw_receipt_time;
 }

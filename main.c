@@ -168,12 +168,13 @@ void *pthread_routine(void *arg) {
         
         if(len_recv > 0) {
             
-            int resp;
-            int fw_cb;
-            int fw_sb;
+            int         resp;
+            int         fw_cb;
+            int         fw_sb;
+            char        *md5_hash;
             struct stat ifw;
-            char time_get_file;
-            char fp;
+            char        *fw_receipt_time;
+            char        *fp;
             
             //Resp command
             const char *resp_ping;
@@ -222,11 +223,11 @@ void *pthread_routine(void *arg) {
                     
                     ifw = info_fw(firmware_file_name);
                     
-                    md5_fw(firmware_file_name);
+                    md5_hash = md5_fw(firmware_file_name);
                     
-                    time_get_file = time_fw(u);
+                    fw_receipt_time = time_fw(u);
                     
-                    sprintf(buff_recv, resp_fwinfo, ifw.st_size, md5_str, time_get_file);
+                    sprintf(buff_recv, resp_fwinfo, ifw.st_size, md5_hash, fw_receipt_time);
                     
                     if(send(connfd, buff_recv, sizeof(buff_recv) , 0) == -1) {
                         sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Error: %s", pid, client_ip, client_port, "Error send fwinfo");
@@ -242,6 +243,8 @@ void *pthread_routine(void *arg) {
                     fp = read_fw(firmware_file_name, fw_sb, fw_cb);
                     
                     sprintf(buff_recv, resp_fwget, fp);
+                    
+                    free(fp); //Freeing dynamically allocated memory(file_part)
                     
                     if(send(connfd, buff_recv, sizeof(buff_recv) , 0) == -1) {
                         sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Error: %s", pid, client_ip, client_port, "Error send fwget");
