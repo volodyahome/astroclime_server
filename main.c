@@ -122,44 +122,46 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
     
-    while(keep_run) {
-        pthread_arg = (pthread_arg_t *)malloc(sizeof *pthread_arg);
-        if (!pthread_arg) {
-            perror("malloc");
-            continue;
-        }
+//    while(keep_run) {
+//
+//    }
+    
+    pthread_arg = (pthread_arg_t *)malloc(sizeof *pthread_arg);
+    if (!pthread_arg) {
+        perror("malloc");
+        //continue;
+    }
+    
+    /* Accept connection to client. */
+    client_address_len = sizeof pthread_arg->client_address;
+    
+    pthread_arg->connfd = accept(sockfd, (struct sockaddr*)&pthread_arg->client_address, &client_address_len);
+    if(pthread_arg->connfd == -1) {
+        sprintf(buff_log, "- PID: %i - Connection failed", pid);
+        slog_print(SLOG_FATAL, 1, buff_log);
         
-        /* Accept connection to client. */
-        client_address_len = sizeof pthread_arg->client_address;
+        free(pthread_arg);
         
-        pthread_arg->connfd = accept(sockfd, (struct sockaddr*)&pthread_arg->client_address, &client_address_len);
-        if(pthread_arg->connfd == -1) {
-            sprintf(buff_log, "- PID: %i - Connection failed", pid);
-            slog_print(SLOG_FATAL, 1, buff_log);
-            
-            free(pthread_arg);
-            
-            continue;
-        } else {
-            socklen_t len = sizeof(pthread_arg->client_address);
-            getsockname(pthread_arg->connfd, (struct sockaddr*)&pthread_arg->client_address, &len);
-            inet_ntop(AF_INET, &pthread_arg->client_address.sin_addr, client_ip, sizeof(client_ip));
-            client_port = ntohs(pthread_arg->client_address.sin_port);
-            
-            count_conn++;
-            
-            sprintf(buff_log, "- PID: %i - Connection success. FD: %i, IP: %s, Port: %d", pid, pthread_arg->connfd, client_ip, client_port);
-            slog_print(SLOG_INFO, 1, buff_log);
-        }
+        //continue;
+    } else {
+        socklen_t len = sizeof(pthread_arg->client_address);
+        getsockname(pthread_arg->connfd, (struct sockaddr*)&pthread_arg->client_address, &len);
+        inet_ntop(AF_INET, &pthread_arg->client_address.sin_addr, client_ip, sizeof(client_ip));
+        client_port = ntohs(pthread_arg->client_address.sin_port);
         
-        /* Create thread to serve connection to client. */
-        if (pthread_create(&pthread, &pthread_attr, pthread_routine, (void *)pthread_arg) != 0) {
-            slog_print(SLOG_FATAL, 1, "Error pthread create");
-            
-            free(pthread_arg);
-            
-            continue;
-        }
+        count_conn++;
+        
+        sprintf(buff_log, "- PID: %i - Connection success. FD: %i, IP: %s, Port: %d", pid, pthread_arg->connfd, client_ip, client_port);
+        slog_print(SLOG_INFO, 1, buff_log);
+    }
+    
+    /* Create thread to serve connection to client. */
+    if (pthread_create(&pthread, &pthread_attr, pthread_routine, (void *)pthread_arg) != 0) {
+        slog_print(SLOG_FATAL, 1, "Error pthread create");
+        
+        free(pthread_arg);
+        
+        //continue;
     }
     
     return 0;
