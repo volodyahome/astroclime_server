@@ -182,6 +182,7 @@ void *pthread_routine(void *arg) {
             const char *resp_other;
             const char *resp_stat;
             const char *resp_fwinfo;
+            const char *resp_fwget;
             
             sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Recv data: %s", pid, client_ip, client_port, buff_recv);
             slog_print(SLOG_INFO, 1, buff_log);
