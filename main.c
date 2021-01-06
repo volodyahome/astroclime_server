@@ -37,8 +37,8 @@ int main(int argc, char *argv[]) {
     
     const char* server_host = ini_get(config, "server", "host");
     const unsigned long server_port = strtoul(ini_get(config, "server", "port"), NULL, 10);
-    const int server_timeout_send = (int)ini_get(config, "server", "timeout_send");
-    const int server_timeout_recv = (int)ini_get(config, "server", "timeout_recv");
+    const char* server_timeout_send = ini_get(config, "server", "timeout_send");
+    const char* server_timeout_recv = ini_get(config, "server", "timeout_recv");
     
     const char *log_file_name = ini_get(config, "log", "file_name");
     const char *log_file_path = ini_get(config, "log", "file_path");

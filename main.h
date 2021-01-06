@@ -25,9 +25,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <time.h>
 #include <unistd.h>
-#include <signal.h>
 #include <pthread.h>
 
 #include <sys/types.h>
@@ -92,9 +92,6 @@ struct tm *u;
 
 //Server statistics
 struct rusage usage;
-
-//Resp comand fwget
-char resp_fwget[BUFF_SIZE]  =   "{\"buff\":\"%s\"}";
 
 pthread_attr_t pthread_attr;
 
