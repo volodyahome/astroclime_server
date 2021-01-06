@@ -172,10 +172,9 @@ void *pthread_routine(void *arg) {
     int connfd = pthread_arg->connfd;
     int keep_run = 1;
     
-    //Buffer for received data
-    char buff_recv[BUFF_SIZE] = {0};
-    
     while (keep_run) {
+        //Buffer for received data
+        char buff_recv[BUFF_SIZE] = {0};
         
         bzero(buff_log, sizeof(buff_log));
         
