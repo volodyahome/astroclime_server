@@ -233,6 +233,8 @@ void *pthread_routine(void *arg) {
                         slog_print(SLOG_ERROR, 1, buff_log);
                     }
                     
+                    resp_stat = NULL;
+                    
                     break;
                 case FWINFO:
                     
@@ -251,6 +253,8 @@ void *pthread_routine(void *arg) {
                         slog_print(SLOG_ERROR, 1, buff_log);
                     }
                     
+                    resp_fwinfo = NULL;
+                    
                     break;
                 case FWGET:
                     resp_fwget = answer_json(FWGET);
@@ -268,6 +272,8 @@ void *pthread_routine(void *arg) {
                         sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Error: %s", pid, client_ip, client_port, "Error send fwget");
                         slog_print(SLOG_ERROR, 1, buff_log);
                     }
+                    
+                    resp_fwget = NULL;
                     
                     break;
                 case CLOSE:
@@ -289,6 +295,8 @@ void *pthread_routine(void *arg) {
                     slog_print(SLOG_INFO, 1, buff_log);
                     
                     keep_run = 0;
+                    
+                    resp_close = NULL;
                                             
                     break;
                 case OTHER:
@@ -303,6 +311,8 @@ void *pthread_routine(void *arg) {
                     
                     sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Msg: %s", pid, client_ip, client_port, "Another command sent");
                     slog_print(SLOG_ERROR, 1, buff_log);
+                    
+                    resp_other = NULL;
                     
                     break;
             }

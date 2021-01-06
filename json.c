@@ -85,6 +85,8 @@ int parse_json(char * buff_recv) {
         free(cmd);
     }
     
+    bzero(response, sizeof(response));
+    
     free(parsed_json);
     free(cmd);
     
