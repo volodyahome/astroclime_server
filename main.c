@@ -59,10 +59,10 @@ int main(int argc, char *argv[]) {
     slog_config_set(&slgCfg);
     
     //SOCKET SERVER
-    tv_recv.tv_sec = server_timeout_recv;
+    tv_recv.tv_sec = (int64_t)server_timeout_recv;
     tv_recv.tv_usec = 0;
     
-    tv_send.tv_sec = server_timeout_send;
+    tv_send.tv_sec = (int64_t)server_timeout_send;
     tv_send.tv_usec = 0;
     
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -237,6 +237,7 @@ void *pthread_routine(void *arg) {
                     
                     break;
                 case FWGET:
+                    resp_fwget = answer_json(FWGET);
                     
                     fw_cb = get_fw_count_bytes();
                     fw_sb = get_fw_start_byte();

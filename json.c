@@ -104,6 +104,7 @@ const char *answer_json(int answer) {
     json_object *fwsize;
     json_object *fwmd5;
     json_object *dt;
+    json_object *buff;
     
     
     switch (answer) {
@@ -145,7 +146,8 @@ const char *answer_json(int answer) {
             json_object_object_add(jobj, "dt", dt);
             break;
         case FWGET:
-            
+            buff = json_object_new_string("%s");
+            json_object_object_add(jobj, "buff", buff);
             break;
         case ANALYTICS:
             

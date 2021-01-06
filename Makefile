@@ -9,7 +9,7 @@ LOG_PATH = /var/log/astroclime/
 all: $(SOURCES) $(EXECUTABLE)
 
 $(EXECUTABLE): $(SOURCES)
-	$(CC) $< $(CFLAGS) $(CLIBS) -o $@
+	$(CC) $(CFLAGS) -o $@ $^ $(CLIBS)
 
 clean:
 	rm $(EXECUTABLE)
