@@ -153,7 +153,7 @@ const char *answer_json(int answer) {
     
     response = json_object_to_json_string_ext(jobj, JSON_C_TO_STRING_PLAIN);
     
-    //resp = conn = mem_used = fwsize = fwmd5 = dt = buff = NULL;
+    resp = conn = mem_used = fwsize = fwmd5 = dt = buff = NULL;
     
     json_object_put(jobj);
     json_object_put(jarray);
@@ -163,10 +163,11 @@ const char *answer_json(int answer) {
 
 const char *error_json(int err) {
     
-    const char *response;
-    struct json_object *jobj        = json_object_new_object();
+    const char *response            = NULL;
     struct json_object *errco       = NULL;
     struct json_object *errdesc     = NULL;
+    
+    struct json_object *jobj        = json_object_new_object();
     
     switch (err) {
         case INVALID_COMMAND:
@@ -199,9 +200,9 @@ const char *error_json(int err) {
     
     response = json_object_to_json_string_ext(jobj, JSON_C_TO_STRING_PLAIN);
     
-    //errco = errdesc = NULL;
+    errco = errdesc = NULL;
     
-    json_object_put(jobj);
+    //json_object_put(jobj);
     
     return response;
 }
