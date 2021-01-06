@@ -175,9 +175,7 @@ void *pthread_routine(void *arg) {
     while (keep_run) {
         //Buffer for received data
         char buff_recv[BUFF_SIZE] = {0};
-        
-        bzero(buff_log, sizeof(buff_log));
-        
+                
         ssize_t len_recv;
         len_recv = recv(connfd, buff_recv, sizeof(buff_recv), 0);
         
