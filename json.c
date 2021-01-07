@@ -161,9 +161,14 @@ const char *answer_json(int answer) {
     return response;
 }
 
-const char *error_json(int err) {
+char *error_json(int err) {
     
-    const char *response            = NULL;
+    char *response = malloc(256*sizeof(char));
+    
+    if(response == NULL) {
+        return NULL;
+    }
+    
     struct json_object *errco       = NULL;
     struct json_object *errdesc     = NULL;
     
@@ -198,7 +203,7 @@ const char *error_json(int err) {
     json_object_object_add(jobj, "errco", errco);
     json_object_object_add(jobj, "errdesc", errdesc);
     
-    response = json_object_to_json_string_ext(jobj, JSON_C_TO_STRING_PLAIN);
+    sprintf(response, "%s", json_object_to_json_string_ext(jobj, JSON_C_TO_STRING_PLAIN));
     
     errco = errdesc = NULL;
     

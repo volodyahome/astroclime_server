@@ -58,7 +58,7 @@ int parse_json(char * buff_recv);
 const char *answer_json(int answer);
 
 //Create JSON error
-const char *error_json(int err);
+char *error_json(int err);
 
 int get_fw_count_bytes(void);
 

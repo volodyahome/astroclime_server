@@ -196,10 +196,11 @@ void *pthread_routine(void *arg) {
             //Resp command
             const char *resp_ping;
             const char *resp_close;
-            const char *resp_other;
             const char *resp_stat;
             const char *resp_fwinfo;
             const char *resp_fwget;
+            
+            char *resp_other;
             
             sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Recv data: %s", pid, client_ip, client_port, buff_recv);
             slog_print(SLOG_INFO, 1, buff_log);
@@ -296,7 +297,15 @@ void *pthread_routine(void *arg) {
                     
                     resp_other = error_json(INVALID_COMMAND);
                     
+                    if(resp_other == NULL) {
+                        sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Msg: %s", pid, client_ip, client_port, "Error malloc");
+                        slog_print(SLOG_ERROR, 1, buff_log);
+                        
+                        break;
+                    }
+                    
                     sprintf(buff_recv, "%s", resp_other);
+                    
                     if(send(connfd, buff_recv, sizeof(buff_recv) , 0) == -1) {
                         sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Msg: %s", pid, client_ip, client_port, "Error send other command");
                         slog_print(SLOG_ERROR, 1, buff_log);
@@ -304,6 +313,9 @@ void *pthread_routine(void *arg) {
                     
                     sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Msg: %s", pid, client_ip, client_port, "Another command sent");
                     slog_print(SLOG_ERROR, 1, buff_log);
+                    
+                    free(resp_other);
+                    resp_other = NULL;
                     
                     break;
             }
