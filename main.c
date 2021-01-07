@@ -174,7 +174,8 @@ void *pthread_routine(void *arg) {
     
     while (keep_run) {
         //Buffer for received data
-        char buff_recv[BUFF_SIZE] = {0};
+        char buff_recv[BUFF_SIZE]   = {0};
+        char buff_tmp[BUFF_SIZE]    = {0};
         ssize_t len_recv;
         
         len_recv = recv(connfd, buff_recv, sizeof(buff_recv), 0);
@@ -197,7 +198,7 @@ void *pthread_routine(void *arg) {
             slog_print(SLOG_INFO, 1, buff_log);
             
             switch (parse_json(buff_recv)) {
-                case PING:
+                case PING://{"cmd":"ping"}
                     
                     resp = answer_json(PING);
                     
@@ -211,7 +212,7 @@ void *pthread_routine(void *arg) {
                     err_msg = "Error send answer command ping";
                     send_messange(connfd, resp, err_msg);
                     break;
-                case STAT:
+                case STAT://{"cmd":"stat"}
                     
                     resp = answer_json(STAT);
                     
@@ -224,12 +225,13 @@ void *pthread_routine(void *arg) {
                     
                     getrusage(RUSAGE_SELF, &usage);
                     
-                    //sprintf(buff_send, resp, count_conn, usage.ru_maxrss);
+                    sprintf(buff_tmp, resp, count_conn, usage.ru_maxrss);
                     
-                    //send_messange(connfd, resp, *"Error send stat");
+                    err_msg = "Error send stat";
+                    send_messange(connfd, buff_tmp, err_msg);
                                         
                     break;
-                case FWINFO:
+                case FWINFO://{"cmd":"fwinfo"}
                     
                     resp = answer_json(FWINFO);
                     
@@ -246,9 +248,10 @@ void *pthread_routine(void *arg) {
                     
                     fw_receipt_time = time_fw(u);
                     
-                    //sprintf(buff_send, resp, ifw.st_size, md5_hash, fw_receipt_time);
+                    sprintf(buff_tmp, resp, ifw.st_size, md5_hash, fw_receipt_time);
                     
-                    //send_messange(connfd, resp, *"Error send fwinfo");
+                    err_msg = "Error send fwinfo";
+                    send_messange(connfd, buff_tmp, err_msg);
                                         
                     break;
                 case FWGET://{"cmd":"fwget","count":40,"start":0}
@@ -266,15 +269,16 @@ void *pthread_routine(void *arg) {
                     
                     fp = read_fw(firmware_file_name, fw_sb, fw_cb);
                     
-                    //sprintf(buff_send, resp, fp);
+                    
+                    sprintf(buff_tmp, resp, fp);
                     
                     free(fp); //Freeing dynamically allocated memory(file_part)
                     
                     err_msg = "Error send fwget";
-                    send_messange(connfd, resp, err_msg);
+                    send_messange(connfd, buff_tmp, err_msg);
                                         
                     break;
-                case CLOSE:
+                case CLOSE://{"cmd":"close"}
                     
                     resp = answer_json(CLOSE);
                     
@@ -298,7 +302,7 @@ void *pthread_routine(void *arg) {
                     keep_run = 0;
                                                                 
                     break;
-                case OTHER:
+                case OTHER://Invalid command
                     
                     resp = error_json(INVALID_COMMAND);
                     
