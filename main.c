@@ -175,70 +175,70 @@ void *pthread_routine(void *arg) {
     while (keep_run) {
         //Buffer for received data
         char buff_recv[BUFF_SIZE] = {0};
-                
         ssize_t len_recv;
-        len_recv = recv(connfd, buff_recv, sizeof(buff_recv), 0);
         
+        len_recv = recv(connfd, buff_recv, sizeof(buff_recv), 0);
         if(len_recv == -1) {
             slog_print(SLOG_ERROR, 1, "Error recv data");
         }
         
         if(len_recv > 0) {
             
-            int         resp;
-            int         fw_cb;
-            int         fw_sb;
-            char        *md5_hash;
+            char *resp               = NULL; //JSON
+            int fw_cb;
+            int fw_sb;
+            char *md5_hash           = NULL;
             struct stat ifw;
-            char        *fw_receipt_time;
-            char        *fp;
-            
-            //Resp command
-            const char *resp_ping;
-            const char *resp_close;
-            const char *resp_stat;
-            const char *resp_fwinfo;
-            const char *resp_fwget;
-            
-            char *resp_other;
+            char *fw_receipt_time    = NULL;
+            char *fp                 = NULL;
+            char *err_msg;
             
             sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Recv data: %s", pid, client_ip, client_port, buff_recv);
             slog_print(SLOG_INFO, 1, buff_log);
             
-            resp = parse_json(buff_recv);
-            
-            bzero(buff_recv, sizeof(buff_recv));
-            
-            switch (resp) {
+            switch (parse_json(buff_recv)) {
                 case PING:
                     
-                    resp_ping = answer_json(PING);
+                    resp = answer_json(PING);
                     
-                    sprintf(buff_recv, "%s", resp_ping);
-                    
-                    if(send(connfd, buff_recv, sizeof(buff_recv) , 0) == -1) {
-                        sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Error: %s", pid, client_ip, client_port, "Error send ping");
-                        slog_print(SLOG_ERROR, 1, buff_log);
+                    if(resp == NULL) {
+                        err_msg = "Error malloc";
+                        log_error(buff_log, err_msg);
+                        
+                        break;
                     }
-                                        
+                     
+                    err_msg = "Error send answer command ping";
+                    send_messange(connfd, resp, err_msg);
                     break;
                 case STAT:
                     
+                    resp = answer_json(STAT);
+                    
+                    if(resp == NULL) {
+                        err_msg = "Error malloc";
+                        log_error(buff_log, err_msg);
+                        
+                        break;
+                    }
+                    
                     getrusage(RUSAGE_SELF, &usage);
                     
-                    resp_stat = answer_json(STAT);
+                    //sprintf(buff_send, resp, count_conn, usage.ru_maxrss);
                     
-                    sprintf(buff_recv, resp_stat, count_conn, usage.ru_maxrss);
-                    
-                    if(send(connfd, buff_recv, sizeof(buff_recv) , 0) == -1) {
-                        sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Error: %s", pid, client_ip, client_port, "Error send stat");
-                        slog_print(SLOG_ERROR, 1, buff_log);
-                    }
+                    //send_messange(connfd, resp, *"Error send stat");
                                         
                     break;
                 case FWINFO:
                     
-                    resp_fwinfo = answer_json(FWINFO);
+                    resp = answer_json(FWINFO);
+                    
+                    if(resp == NULL) {
+                        err_msg = "Error malloc";
+                        log_error(buff_log, err_msg);
+                        
+                        break;
+                    }
                     
                     ifw = info_fw(firmware_file_name);
                     
@@ -246,42 +246,47 @@ void *pthread_routine(void *arg) {
                     
                     fw_receipt_time = time_fw(u);
                     
-                    sprintf(buff_recv, resp_fwinfo, ifw.st_size, md5_hash, fw_receipt_time);
+                    //sprintf(buff_send, resp, ifw.st_size, md5_hash, fw_receipt_time);
                     
-                    if(send(connfd, buff_recv, sizeof(buff_recv) , 0) == -1) {
-                        sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Error: %s", pid, client_ip, client_port, "Error send fwinfo");
-                        slog_print(SLOG_ERROR, 1, buff_log);
-                    }
+                    //send_messange(connfd, resp, *"Error send fwinfo");
                                         
                     break;
-                case FWGET:
-                    resp_fwget = answer_json(FWGET);
+                case FWGET://{"cmd":"fwget","count":40,"start":0}
+                    resp = answer_json(FWGET);
+                    
+                    if(resp == NULL) {
+                        err_msg = "Error malloc";
+                        log_error(buff_log, err_msg);
+                        
+                        break;
+                    }
                     
                     fw_cb = get_fw_count_bytes();
                     fw_sb = get_fw_start_byte();
                     
                     fp = read_fw(firmware_file_name, fw_sb, fw_cb);
                     
-                    sprintf(buff_recv, resp_fwget, fp);
+                    //sprintf(buff_send, resp, fp);
                     
                     free(fp); //Freeing dynamically allocated memory(file_part)
                     
-                    if(send(connfd, buff_recv, sizeof(buff_recv) , 0) == -1) {
-                        sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Error: %s", pid, client_ip, client_port, "Error send fwget");
-                        slog_print(SLOG_ERROR, 1, buff_log);
-                    }
+                    err_msg = "Error send fwget";
+                    send_messange(connfd, resp, err_msg);
                                         
                     break;
                 case CLOSE:
                     
-                    resp_close = answer_json(CLOSE);
+                    resp = answer_json(CLOSE);
                     
-                    sprintf(buff_recv, "%s", resp_close);
-                    
-                    if(send(connfd, buff_recv, sizeof(buff_recv) , 0) == -1) {
-                        sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Error: %s", pid, client_ip, client_port, "Error send close");
-                        slog_print(SLOG_ERROR, 1, buff_log);
+                    if(resp == NULL) {
+                        err_msg = "Error malloc";
+                        log_error(buff_log, err_msg);
+                        
+                        break;
                     }
+                              
+                    err_msg = "Error send close";
+                    send_messange(connfd, resp, err_msg);
                     
                     close(connfd);
                     
@@ -295,34 +300,45 @@ void *pthread_routine(void *arg) {
                     break;
                 case OTHER:
                     
-                    resp_other = error_json(INVALID_COMMAND);
+                    resp = error_json(INVALID_COMMAND);
                     
-                    if(resp_other == NULL) {
-                        sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Msg: %s", pid, client_ip, client_port, "Error malloc");
-                        slog_print(SLOG_ERROR, 1, buff_log);
+                    if(resp == NULL) {
+                        err_msg = "Error malloc";
+                        log_error(buff_log, err_msg);
                         
                         break;
                     }
                     
-                    sprintf(buff_recv, "%s", resp_other);
-                    
-                    if(send(connfd, buff_recv, sizeof(buff_recv) , 0) == -1) {
-                        sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Msg: %s", pid, client_ip, client_port, "Error send other command");
-                        slog_print(SLOG_ERROR, 1, buff_log);
-                    }
-                    
-                    sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Msg: %s", pid, client_ip, client_port, "Another command sent");
-                    slog_print(SLOG_ERROR, 1, buff_log);
-                    
-                    free(resp_other);
-                    resp_other = NULL;
+                    err_msg = "Error send other command";
+                    send_messange(connfd, resp, err_msg);
                     
                     break;
             }
+            
+            free(resp); //Freeing dynamically allocated memory(resp)
+            resp    = NULL;
+            err_msg = NULL;
         }
-        
         bzero(buff_recv, sizeof(buff_recv));
     }
     
     return 0;
+}
+
+void send_messange(int connfd, char *resp, char *error_message) {
+    char buff_send[BUFF_SEND] = {0};
+    
+    sprintf(buff_send, "%s", resp);
+    
+    if(send(connfd, buff_send, sizeof(buff_send) , 0) == -1) {
+        sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Error: %s", pid, client_ip, client_port, error_message);
+        slog_print(SLOG_ERROR, 1, buff_log);
+    }
+    
+    bzero(buff_send, sizeof(buff_send));
+}
+
+void log_error(char *buff_log, char *message) {
+    sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Msg: %s", pid, client_ip, client_port, message);
+    slog_print(SLOG_ERROR, 1, buff_log);
 }

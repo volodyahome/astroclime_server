@@ -39,16 +39,16 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "BA553567-7F64-4B93-B666-A462E2909DAC"
-            shouldBeEnabled = "No"
+            uuid = "517C18E3-AA4E-49EA-A1CF-0EF99AAC8086"
+            shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "json.c"
+            filePath = "main.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "206"
-            endingLineNumber = "206"
-            landmarkName = "error_json(err)"
+            startingLineNumber = "271"
+            endingLineNumber = "271"
+            landmarkName = "pthread_routine(arg)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>

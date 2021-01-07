@@ -46,6 +46,7 @@
 
 #define CLIENT_IP_SIZE  16
 #define BUFF_SIZE       1024
+#define BUFF_SEND       512
 
 //Process id
 pid_t pid;
@@ -107,5 +108,11 @@ socklen_t client_address_len;
 pthread_t pthread;
 
 void *pthread_routine(void *arg);
+
+//Send data
+void send_messange(int connfd, char *resp, char *error_message);
+
+//Log error
+void log_error(char *buff_log, char *message);
 
 #endif /* MAIN_H */

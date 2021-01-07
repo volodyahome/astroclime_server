@@ -52,10 +52,10 @@ enum Error {
 };
 
 //Parse recv JSON
-int parse_json(char * buff_recv);
+int parse_json(char *buff_recv);
 
 //Create JSON answer
-const char *answer_json(int answer);
+char *answer_json(int answer);
 
 //Create JSON error
 char *error_json(int err);
