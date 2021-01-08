@@ -156,7 +156,6 @@ char *answer_json(int answer) {
     resp = conn = mem_used = fwsize = fwmd5 = dt = buff = NULL;
     
     json_object_put(jobj);
-    json_object_put(jarray);
    
     return response;
 }
@@ -206,6 +205,8 @@ char *error_json(int err) {
     sprintf(response, "%s", json_object_to_json_string_ext(jobj, JSON_C_TO_STRING_PLAIN));
     
     errco = errdesc = NULL;
+    
+
     
     json_object_put(jobj);
     
