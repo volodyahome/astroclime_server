@@ -174,11 +174,12 @@ void *pthread_routine(void *arg) {
     
     while (keep_run) {
         //Buffer for received data
-        char buff_recv[BUFF_SIZE]   = {0};
+        char *buff_recv = malloc(BUFF_SIZE * sizeof(char));//(длине строки + 1)*sizeof(char)
+        
         char buff_tmp[BUFF_SIZE]    = {0};
         ssize_t len_recv;
         
-        len_recv = recv(connfd, buff_recv, sizeof(buff_recv), 0);
+        len_recv = recv(connfd, buff_recv, BUFF_SIZE, 0);
         if(len_recv == -1) {
             slog_print(SLOG_ERROR, 1, "Error recv data");
         }
@@ -193,6 +194,8 @@ void *pthread_routine(void *arg) {
             char *fw_receipt_time    = NULL;
             char *fp                 = NULL;
             char *err_msg;
+            
+            buff_recv = (char *)realloc(buff_recv, len_recv);
             
             sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Recv data: %s", pid, client_ip, client_port, buff_recv);
             slog_print(SLOG_INFO, 1, buff_log);
@@ -323,7 +326,9 @@ void *pthread_routine(void *arg) {
             resp    = NULL;
             err_msg = NULL;
         }
-        bzero(buff_recv, sizeof(buff_recv));
+        
+        free(buff_recv); //Freeing dynamically allocated memory(buff_recv)
+        buff_recv = NULL;
     }
     
     return 0;

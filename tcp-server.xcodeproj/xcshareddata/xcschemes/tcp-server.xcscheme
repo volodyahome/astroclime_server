@@ -52,7 +52,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/bs/Desktop/tcp-server/cnf.ini"
+            argument = "/Users/testpc/Desktop/astroclime_server/cnf.ini"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

@@ -206,8 +206,6 @@ char *error_json(int err) {
     
     errco = errdesc = NULL;
     
-
-    
     json_object_put(jobj);
     
     return response;
