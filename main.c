@@ -29,19 +29,19 @@ int main(int argc, char *argv[]) {
         exit(EXIT_SUCCESS);
     }
     
-    pid_t parpid;
-
-    parpid=fork();
-
-    if(parpid < 0) {
-        printf("\ncan't fork");
-        exit(EXIT_FAILURE);
-    }
-    else if(parpid != 0) {
-        exit(EXIT_SUCCESS);
-    }
-
-    setsid();
+//    pid_t parpid;
+//
+//    parpid=fork();
+//
+//    if(parpid < 0) {
+//        printf("\ncan't fork");
+//        exit(EXIT_FAILURE);
+//    }
+//    else if(parpid != 0) {
+//        exit(EXIT_SUCCESS);
+//    }
+//
+//    setsid();
     
     
     //PROC ID
@@ -50,10 +50,10 @@ int main(int argc, char *argv[]) {
     //CONF
     ini_t *config = ini_load(argv[1]); // argv[1] - path config file
     
-    const char* server_host = ini_get(config, "server", "host");
+    const char *server_host = ini_get(config, "server", "host");
     const unsigned long server_port = strtoul(ini_get(config, "server", "port"), NULL, 10);
-    const char* server_timeout_send = ini_get(config, "server", "timeout_send");
-    const char* server_timeout_recv = ini_get(config, "server", "timeout_recv");
+    const char *server_timeout_send = ini_get(config, "server", "timeout_send");
+    const char *server_timeout_recv = ini_get(config, "server", "timeout_recv");
     
     const char *log_file_name = ini_get(config, "log", "file_name");
     const char *log_file_path = ini_get(config, "log", "file_path");
@@ -95,10 +95,10 @@ int main(int argc, char *argv[]) {
     
     bzero(&serv_addr, sizeof(serv_addr));
     bzero(&client_addr, sizeof(client_addr));
-    bzero(&serv_addr, sizeof(serv_addr));
     
     serv_addr.sin_family = AF_INET;
-    inet_aton(server_host, &serv_addr.sin_addr);
+    serv_addr.sin_addr.s_addr = inet_addr(server_host);
+//    inet_aton(server_host, &serv_addr.sin_addr);
     serv_addr.sin_port = htons(server_port);
     
     if(bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1) {
