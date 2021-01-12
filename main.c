@@ -178,8 +178,8 @@ void *pthread_routine(void *arg) {
     
     while (keep_run) {
         //Buffer for received data
-        char *buff_recv = malloc(pthread_arg->buff_recv_size * sizeof(char));//(длине строки + 1)*sizeof(char)
-        
+        char *buff_recv             = NULL;
+        buff_recv                   = malloc(pthread_arg->buff_recv_size * sizeof(char));
         char buff_tmp[BUFF_SIZE]    = {0};
         ssize_t len_recv;
         
@@ -215,7 +215,7 @@ void *pthread_routine(void *arg) {
             
             buff_recv = (char *)realloc(buff_recv, len_recv);
             
-            sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Recv data: %s, Recv_len; %lu", pid, client_ip, client_port, buff_recv, len_recv);
+            sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Recv data: %s, Recv_len: %lu", pid, client_ip, client_port, buff_recv, len_recv);
             slog_print(SLOG_INFO, 1, buff_log);
             
             switch (parse_json(buff_recv)) {
