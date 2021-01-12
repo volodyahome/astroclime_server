@@ -189,18 +189,15 @@ int daemon_server(char *cnf_path) {
 }
 
 void *pthread_routine(void *arg) {
-    
-    pthread_arg_t *pthread_arg = (pthread_arg_t *)arg;
+    pthread_arg_t *pthread_arg  = (pthread_arg_t *)arg;
     int connfd = pthread_arg->connfd;
-    int keep_run = 1;
-    
+    int keep_run                = 1;
+
     while (keep_run) {
         ssize_t len_recv;
-
-        //Buffer for received data
-        char *buff_recv             = NULL;
         size_t memory_size          = pthread_arg->buff_recv_size * sizeof(char);
-        buff_recv                   = malloc(memory_size);
+        char *buff_recv             = (char *)malloc(memory_size);
+        // buff_recv                   = NULL;
         char buff_tmp[BUFF_SIZE]    = {0};
         
         len_recv = recv(connfd, buff_recv, memory_size, 0);
@@ -387,12 +384,10 @@ void *pthread_routine(void *arg) {
 }
 
 void send_messange(int connfd, char *resp, char *error_message, int buff_send_size) {
-    char *buff_send = malloc(buff_send_size * sizeof(char));
     int len_resp    = strlen(resp);
-    
-    sprintf(buff_send, "%s", resp);
+    char *buff_send = (char *)malloc(len_resp * sizeof(char));
 
-    buff_send = (char *)realloc(buff_send, len_resp);
+    sprintf(buff_send, "%s", resp);
     
     if(send(connfd, buff_send, len_resp , 0) == -1) {
         sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Error: %s", pid, client_ip, client_port, error_message);
