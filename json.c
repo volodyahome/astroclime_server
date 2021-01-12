@@ -28,6 +28,9 @@ int fw_count_bytes = 0;
 //Byte to start reading
 int fw_start_byte = 0;
 
+//Length array
+int len_array = 0;
+
 int parse_json(char *buff_recv) {
     
     struct json_object *parsed_json = NULL;
@@ -46,6 +49,15 @@ int parse_json(char *buff_recv) {
             result = 0;
         }
         if (strcmp("random", response) == 0) {
+            struct json_object *len = NULL;
+            
+            json_object_object_get_ex(parsed_json, "len", &len);
+            if(len != NULL) {
+                len_array = json_object_get_int(len);
+            }
+
+            len = NULL;
+
             result = 1;
         }
         if (strcmp("close", response) == 0) {
@@ -90,7 +102,7 @@ int parse_json(char *buff_recv) {
 }
 
 char *answer_json(int answer) {
-    
+    int i;
     char *response = malloc(128*sizeof(char));
     
     struct json_object *jobj        = json_object_new_object();
@@ -120,7 +132,14 @@ char *answer_json(int answer) {
             json_object_object_add(jobj, "data", jarray);
             break;
         case RANDOM:
-            
+            resp = json_object_new_string("random");
+
+            for (i = 0; i < len_array; i++) {
+                json_object_array_add(jarray, json_object_new_int(i));
+            }
+
+            json_object_object_add(jobj, "resp", resp);
+            json_object_object_add(jobj, "data", jarray);
             break;
         case CLOSE:
             resp = json_object_new_string("bay");

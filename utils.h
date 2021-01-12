@@ -26,9 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
 #include <sys/stat.h>
-
 #include <openssl/md5.h>
 
 #include "logger.h"

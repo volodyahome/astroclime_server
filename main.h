@@ -65,7 +65,7 @@ struct statm_t{
 };
 
 //Buffer log
-char buff_log[BUFF_SIZE];
+char *buff_log = NULL;
 
 //Keep run
 int keep_run = 1;

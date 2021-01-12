@@ -29,24 +29,23 @@ int main(int argc, char *argv[]) {
         exit(EXIT_SUCCESS);
     }
     
-    pid_t parpid;
+    // pid_t parpid;
 
-    parpid=fork();
+    // parpid=fork();
 
-    if(parpid < 0) {
-        printf("\ncan't fork");
-        exit(EXIT_FAILURE);
-    }
-    else if(parpid != 0) {
-        exit(EXIT_SUCCESS);
-    }
+    // if(parpid < 0) {
+    //     printf("\ncan't fork");
+    //     exit(EXIT_FAILURE);
+    // }
+    // else if(parpid != 0) {
+    //     exit(EXIT_SUCCESS);
+    // }
 
-    setsid();
-    
+    // setsid();
     
     //PROC ID
     pid = getpid();
-    
+
     //CONF
     ini_t *config = ini_load(argv[1]); // argv[1] - path config file
     
@@ -54,11 +53,14 @@ int main(int argc, char *argv[]) {
     const unsigned long server_port = strtoul(ini_get(config, "server", "port"), NULL, 10);
     const char *server_timeout_send = ini_get(config, "server", "timeout_send");
     const char *server_timeout_recv = ini_get(config, "server", "timeout_recv");
+    const int server_buff_log       = atoi(ini_get(config, "server", "buff_log"));
     
     const char *log_file_name       = ini_get(config, "log", "file_name");
     const char *log_file_path       = ini_get(config, "log", "file_path");
     
     firmware_file_name              = ini_get(config, "firmware", "file_name");
+
+    buff_log = malloc(server_buff_log * sizeof(char));
     
     //LOG CFG
     SLogConfig slgCfg;
@@ -167,6 +169,9 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    free(buff_log);
+    buff_log = NULL;
+    
     ini_free(config);
 }
 
@@ -177,13 +182,15 @@ void *pthread_routine(void *arg) {
     int keep_run = 1;
     
     while (keep_run) {
+        ssize_t len_recv;
+
         //Buffer for received data
         char *buff_recv             = NULL;
-        buff_recv                   = malloc(pthread_arg->buff_recv_size * sizeof(char));
+        size_t memory_size          = pthread_arg->buff_recv_size * sizeof(char);
+        buff_recv                   = malloc(memory_size);
         char buff_tmp[BUFF_SIZE]    = {0};
-        ssize_t len_recv;
         
-        len_recv = recv(connfd, buff_recv, BUFF_SIZE, 0);
+        len_recv = recv(connfd, buff_recv, memory_size, 0);
         if(len_recv == -1) {
             slog_print(SLOG_ERROR, 1, "Error recv data");
         }
@@ -193,6 +200,7 @@ void *pthread_routine(void *arg) {
             buff_recv = NULL;
 
             free(pthread_arg);
+            pthread_arg = NULL;
 
             keep_run = 0;
 
@@ -204,13 +212,13 @@ void *pthread_routine(void *arg) {
         
         if(len_recv > 0) {
             
-            char *resp               = NULL; //JSON
+            char *resp              = NULL; //JSON
             int fw_cb;
             int fw_sb;
-            char *md5_hash           = NULL;
+            char *md5_hash          = NULL;
             struct stat ifw;
-            char *fw_receipt_time    = NULL;
-            char *fp                 = NULL;
+            char *fw_receipt_time   = NULL;
+            char *fp                = NULL;
             char *err_msg;
             
             buff_recv = (char *)realloc(buff_recv, len_recv);
@@ -231,6 +239,19 @@ void *pthread_routine(void *arg) {
                     }
                      
                     err_msg = "Error send answer command ping";
+                    send_messange(connfd, resp, err_msg, pthread_arg->buff_send_size);
+                    break;
+                case RANDOM://{"cmd":"random","len":120}                    
+                    resp = answer_json(RANDOM);
+
+                    if(resp == NULL) {
+                        err_msg = "Error malloc";
+                        log_error(buff_log, err_msg);
+                        
+                        break;
+                    }
+
+                    err_msg = "Error send answer command random";
                     send_messange(connfd, resp, err_msg, pthread_arg->buff_send_size);
                     break;
                 case STAT://{"cmd":"stat"}
