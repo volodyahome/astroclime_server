@@ -108,6 +108,8 @@ socklen_t client_address_len;
 
 pthread_t pthread;
 
+int daemon_server(char *cnf_path);
+
 void *pthread_routine(void *arg);
 
 //Send data

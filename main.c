@@ -24,12 +24,14 @@
 
 int main(int argc, char *argv[]) {
     //Change exist two arg
-    if(argc < 2) {
-        printf("Enter the path to the config file .ini\n");
+    if(argc < 3) {
+        printf("Usage ./astroclime_server -d for daemon or ./astroclime_server -i for interactive\nEnter the path to the config file .ini\n");
         exit(EXIT_SUCCESS);
     }
-    
-    if (strcmp(argv[2],"-d")==0) {
+
+    if (strcmp(argv[2],"-i")==0) {
+        daemon_server(argv[1]);
+    } else if (strcmp(argv[2],"-d")==0) {
         pid_t parpid;
 
         parpid=fork();
@@ -43,13 +45,20 @@ int main(int argc, char *argv[]) {
         }
 
         setsid();
+
+        daemon_server(argv[1]);
     }
-    
+
+    return 0;
+}
+
+
+int daemon_server(char *cnf_path) {
     //PROC ID
     pid = getpid();
 
     //CONF
-    ini_t *config = ini_load(argv[1]); // argv[1] - path config file
+    ini_t *config = ini_load(cnf_path); //path config file
     
     const char *server_host         = ini_get(config, "server", "host");
     const unsigned long server_port = strtoul(ini_get(config, "server", "port"), NULL, 10);
@@ -175,6 +184,8 @@ int main(int argc, char *argv[]) {
     buff_log = NULL;
     
     ini_free(config);
+
+    return 0;
 }
 
 void *pthread_routine(void *arg) {

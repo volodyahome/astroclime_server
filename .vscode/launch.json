@@ -10,7 +10,8 @@
             "request": "launch",
             "program": "${workspaceFolder}/astroclime_server",
             "args": [
-                "cnf.ini"
+                "cnf.ini",
+                "-i"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
