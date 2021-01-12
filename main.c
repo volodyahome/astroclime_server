@@ -215,7 +215,7 @@ void *pthread_routine(void *arg) {
             
             buff_recv = (char *)realloc(buff_recv, len_recv);
             
-            sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Recv data: %s", pid, client_ip, client_port, buff_recv);
+            sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Recv data: %s, Recv_len; %lu", pid, client_ip, client_port, buff_recv, len_recv);
             slog_print(SLOG_INFO, 1, buff_log);
             
             switch (parse_json(buff_recv)) {
