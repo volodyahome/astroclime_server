@@ -29,19 +29,21 @@ int main(int argc, char *argv[]) {
         exit(EXIT_SUCCESS);
     }
     
-    // pid_t parpid;
+    if (strcmp(argv[2],"-d")==0) {
+        pid_t parpid;
 
-    // parpid=fork();
+        parpid=fork();
 
-    // if(parpid < 0) {
-    //     printf("\ncan't fork");
-    //     exit(EXIT_FAILURE);
-    // }
-    // else if(parpid != 0) {
-    //     exit(EXIT_SUCCESS);
-    // }
+        if(parpid < 0) {
+            printf("\ncan't fork");
+            exit(EXIT_FAILURE);
+        }
+        else if(parpid != 0) {
+            exit(EXIT_SUCCESS);
+        }
 
-    // setsid();
+        setsid();
+    }
     
     //PROC ID
     pid = getpid();
