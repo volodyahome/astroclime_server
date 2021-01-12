@@ -29,19 +29,19 @@ int main(int argc, char *argv[]) {
         exit(EXIT_SUCCESS);
     }
     
-    pid_t parpid;
+    // pid_t parpid;
 
-    parpid=fork();
+    // parpid=fork();
 
-    if(parpid < 0) {
-        printf("\ncan't fork");
-        exit(EXIT_FAILURE);
-    }
-    else if(parpid != 0) {
-        exit(EXIT_SUCCESS);
-    }
+    // if(parpid < 0) {
+    //     printf("\ncan't fork");
+    //     exit(EXIT_FAILURE);
+    // }
+    // else if(parpid != 0) {
+    //     exit(EXIT_SUCCESS);
+    // }
 
-    setsid();
+    // setsid();
     
     
     //PROC ID
@@ -50,15 +50,15 @@ int main(int argc, char *argv[]) {
     //CONF
     ini_t *config = ini_load(argv[1]); // argv[1] - path config file
     
-    const char *server_host = ini_get(config, "server", "host");
+    const char *server_host         = ini_get(config, "server", "host");
     const unsigned long server_port = strtoul(ini_get(config, "server", "port"), NULL, 10);
     const char *server_timeout_send = ini_get(config, "server", "timeout_send");
     const char *server_timeout_recv = ini_get(config, "server", "timeout_recv");
     
-    const char *log_file_name = ini_get(config, "log", "file_name");
-    const char *log_file_path = ini_get(config, "log", "file_path");
+    const char *log_file_name       = ini_get(config, "log", "file_name");
+    const char *log_file_path       = ini_get(config, "log", "file_path");
     
-    firmware_file_name = ini_get(config, "firmware", "file_name");
+    firmware_file_name              = ini_get(config, "firmware", "file_name");
     
     //LOG CFG
     SLogConfig slgCfg;
@@ -98,7 +98,6 @@ int main(int argc, char *argv[]) {
     
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = inet_addr(server_host);
-//    inet_aton(server_host, &serv_addr.sin_addr);
     serv_addr.sin_port = htons(server_port);
     
     if(bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1) {
@@ -130,6 +129,9 @@ int main(int argc, char *argv[]) {
             
             continue;
         }
+
+        pthread_arg->buff_recv_size = atoi(ini_get(config, "server", "buff_recv_size"));
+        pthread_arg->buff_send_size = atoi(ini_get(config, "server", "buff_send_size"));
         
         /* Accept connection to client. */
         client_address_len = sizeof pthread_arg->client_address;
@@ -164,6 +166,8 @@ int main(int argc, char *argv[]) {
             continue;
         }
     }
+
+    ini_free(config);
 }
 
 void *pthread_routine(void *arg) {
@@ -174,7 +178,7 @@ void *pthread_routine(void *arg) {
     
     while (keep_run) {
         //Buffer for received data
-        char *buff_recv = malloc(BUFF_SIZE * sizeof(char));//(длине строки + 1)*sizeof(char)
+        char *buff_recv = malloc(pthread_arg->buff_recv_size * sizeof(char));//(длине строки + 1)*sizeof(char)
         
         char buff_tmp[BUFF_SIZE]    = {0};
         ssize_t len_recv;
@@ -213,7 +217,7 @@ void *pthread_routine(void *arg) {
                     }
                      
                     err_msg = "Error send answer command ping";
-                    send_messange(connfd, resp, err_msg);
+                    send_messange(connfd, resp, err_msg, pthread_arg->buff_send_size);
                     break;
                 case STAT://{"cmd":"stat"}
                     
@@ -231,7 +235,7 @@ void *pthread_routine(void *arg) {
                     sprintf(buff_tmp, resp, count_conn, usage.ru_maxrss);
                     
                     err_msg = "Error send stat";
-                    send_messange(connfd, buff_tmp, err_msg);
+                    send_messange(connfd, buff_tmp, err_msg, pthread_arg->buff_send_size);
                                         
                     break;
                 case FWINFO://{"cmd":"fwinfo"}
@@ -254,7 +258,7 @@ void *pthread_routine(void *arg) {
                     sprintf(buff_tmp, resp, ifw.st_size, md5_hash, fw_receipt_time);
                     
                     err_msg = "Error send fwinfo";
-                    send_messange(connfd, buff_tmp, err_msg);
+                    send_messange(connfd, buff_tmp, err_msg, pthread_arg->buff_send_size);
                                         
                     break;
                 case FWGET://{"cmd":"fwget","count":40,"start":0}
@@ -278,7 +282,7 @@ void *pthread_routine(void *arg) {
                     free(fp); //Freeing dynamically allocated memory(file_part)
                     
                     err_msg = "Error send fwget";
-                    send_messange(connfd, buff_tmp, err_msg);
+                    send_messange(connfd, buff_tmp, err_msg, pthread_arg->buff_send_size);
                                         
                     break;
                 case CLOSE://{"cmd":"close"}
@@ -293,7 +297,7 @@ void *pthread_routine(void *arg) {
                     }
                               
                     err_msg = "Error send close";
-                    send_messange(connfd, resp, err_msg);
+                    send_messange(connfd, resp, err_msg, pthread_arg->buff_send_size);
                     
                     close(connfd);
                     
@@ -317,7 +321,7 @@ void *pthread_routine(void *arg) {
                     }
                     
                     err_msg = "Error send other command";
-                    send_messange(connfd, resp, err_msg);
+                    send_messange(connfd, resp, err_msg, pthread_arg->buff_send_size);
                     
                     break;
             }
@@ -334,17 +338,21 @@ void *pthread_routine(void *arg) {
     return 0;
 }
 
-void send_messange(int connfd, char *resp, char *error_message) {
-    char buff_send[BUFF_SEND] = {0};
+void send_messange(int connfd, char *resp, char *error_message, int buff_send_size) {
+    char *buff_send = malloc(buff_send_size * sizeof(char));
+    int len_resp    = strlen(resp);
     
     sprintf(buff_send, "%s", resp);
+
+    buff_send = (char *)realloc(buff_send, len_resp);
     
-    if(send(connfd, buff_send, sizeof(buff_send) , 0) == -1) {
+    if(send(connfd, buff_send, len_resp , 0) == -1) {
         sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Error: %s", pid, client_ip, client_port, error_message);
         slog_print(SLOG_ERROR, 1, buff_log);
     }
     
-    bzero(buff_send, sizeof(buff_send));
+    free(buff_send);
+    buff_send = NULL;
 }
 
 void log_error(char *buff_log, char *message) {

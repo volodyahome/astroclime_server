@@ -98,6 +98,8 @@ pthread_attr_t pthread_attr;
 
 typedef struct pthread_arg_t {
     int connfd;
+    int buff_recv_size;
+    int buff_send_size;
     struct sockaddr_in client_address;
 } pthread_arg_t;
 
@@ -110,7 +112,7 @@ pthread_t pthread;
 void *pthread_routine(void *arg);
 
 //Send data
-void send_messange(int connfd, char *resp, char *error_message);
+void send_messange(int connfd, char *resp, char *error_message, int buff_send_size);
 
 //Log error
 void log_error(char *buff_log, char *message);
