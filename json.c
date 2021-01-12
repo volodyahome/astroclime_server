@@ -135,7 +135,11 @@ char *answer_json(int answer) {
             resp = json_object_new_string("random");
 
             for (i = 0; i < len_array; i++) {
-                json_object_array_add(jarray, json_object_new_int(i));
+                struct json_object *num = json_object_new_int(i);
+                
+                json_object_array_add(jarray, num);
+
+                num = NULL;
             }
 
             json_object_object_add(jobj, "resp", resp);
