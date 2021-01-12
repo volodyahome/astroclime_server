@@ -187,6 +187,17 @@ void *pthread_routine(void *arg) {
         if(len_recv == -1) {
             slog_print(SLOG_ERROR, 1, "Error recv data");
         }
+
+        if(len_recv == 0) {
+            free(buff_recv);
+            buff_recv = NULL;
+
+            free(pthread_arg);
+
+            keep_run = 0;
+
+            close(connfd);
+        }
         
         if(len_recv > 0) {
             
