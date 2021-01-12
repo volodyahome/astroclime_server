@@ -29,19 +29,19 @@ int main(int argc, char *argv[]) {
         exit(EXIT_SUCCESS);
     }
     
-    pid_t parpid;
+    // pid_t parpid;
 
-    parpid=fork();
+    // parpid=fork();
 
-    if(parpid < 0) {
-        printf("\ncan't fork");
-        exit(EXIT_FAILURE);
-    }
-    else if(parpid != 0) {
-        exit(EXIT_SUCCESS);
-    }
+    // if(parpid < 0) {
+    //     printf("\ncan't fork");
+    //     exit(EXIT_FAILURE);
+    // }
+    // else if(parpid != 0) {
+    //     exit(EXIT_SUCCESS);
+    // }
 
-    setsid();
+    // setsid();
     
     
     //PROC ID
@@ -146,11 +146,11 @@ int main(int argc, char *argv[]) {
             
             continue;
         } else {
-            socklen_t len = sizeof(pthread_arg->client_address);
-            getsockname(pthread_arg->connfd, (struct sockaddr*)&pthread_arg->client_address, &len);
-            inet_ntop(AF_INET, &pthread_arg->client_address.sin_addr, client_ip, sizeof(client_ip));
-            client_port = ntohs(pthread_arg->client_address.sin_port);
-            
+            struct sockaddr_in* pV4Addr = (struct sockaddr_in*)&client_addr;
+            struct in_addr ipAddr = pV4Addr->sin_addr;
+            inet_ntop(AF_INET, &ipAddr, client_ip, INET_ADDRSTRLEN);
+            client_port = htons (pV4Addr->sin_port);
+
             count_conn++;
             
             sprintf(buff_log, "- PID: %i - Connection success. FD: %i, IP: %s, Port: %d", pid, pthread_arg->connfd, client_ip, client_port);
@@ -197,6 +197,9 @@ void *pthread_routine(void *arg) {
             keep_run = 0;
 
             close(connfd);
+
+            sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Msg: %s", pid, client_ip, client_port, "Connection with client closes");
+            slog_print(SLOG_INFO, 1, buff_log);
         }
         
         if(len_recv > 0) {

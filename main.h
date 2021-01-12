@@ -44,7 +44,6 @@
 
 #define SERVER_VERSION "0.1.1"
 
-#define CLIENT_IP_SIZE  16
 #define BUFF_SIZE       1024
 #define BUFF_SEND       512
 
@@ -81,7 +80,7 @@ int count_conn = 0;
 struct sockaddr_in serv_addr, client_addr;
 
 //Ip address of the connected client
-char client_ip[CLIENT_IP_SIZE];
+char client_ip[INET_ADDRSTRLEN];
 
 //Port of the connected client
 unsigned int client_port;
