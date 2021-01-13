@@ -126,16 +126,19 @@ char *read_fw(const char * firmware_file_name, int start, int count) {
     return file_part;
 }
 
-struct stat info_fw(const char * firmware_file_name) {
-    FILE    *fp;
+struct stat info_fw(const char *firmware_file_name) {
+    FILE *fp;
+    int fd;
     
     fp = fopen(firmware_file_name, "rb");
     if(fp == NULL)
     {
         slog_print(SLOG_ERROR, 1, "Error occured while opening file");
     }
+
+    fd = fileno(fp);
     
-    fstat(fileno(fp), &file_info);
+    fstat(fd, &file_info);
     
     fclose(fp);
     

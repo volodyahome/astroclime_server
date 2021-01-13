@@ -191,15 +191,33 @@ int daemon_server(char *cnf_path) {
 void *pthread_routine(void *arg) {
     pthread_arg_t *pthread_arg  = (pthread_arg_t *)arg;
     int keep_run                = 1;
+    size_t memory_size          = pthread_arg->buff_recv_size * sizeof(char); 
+    char *buff_recv             = NULL; //Request
     int connfd = pthread_arg->connfd;
 
+    buff_recv = (char *)malloc(memory_size);
+
+    if(buff_recv == NULL) {
+        log_error(buff_log, "Error malloc");
+        keep_run = 0;
+        close(connfd);
+    }
+
     while (keep_run) {
+
         ssize_t len_recv;
-        char buff_tmp[BUFF_SIZE]    = {0};
-        size_t memory_size          = pthread_arg->buff_recv_size * sizeof(char);
-        char *buff_recv             = (char *)malloc(memory_size);
+        struct stat ifw;
+        int fw_cb;
+        int fw_sb;
+        char buff_tmp[BUFF_SIZE]    = {0}; 
+        char *resp                  = NULL; //JSON
+        char *md5_hash              = NULL; //MD5 hash file
+        char *fw_receipt_time       = NULL; //Receipt time
+        char *fp                    = NULL;
+        char *err_msg               = NULL;
         
         len_recv = recv(connfd, buff_recv, memory_size, 0);
+        
         if(len_recv == -1) {
             slog_print(SLOG_ERROR, 1, "Error recv data");
         }
@@ -219,19 +237,7 @@ void *pthread_routine(void *arg) {
             slog_print(SLOG_INFO, 1, buff_log);
         }
         
-        if(len_recv > 0) {
-            
-            char *resp              = NULL; //JSON
-            int fw_cb;
-            int fw_sb;
-            char *md5_hash          = NULL;
-            struct stat ifw;
-            char *fw_receipt_time   = NULL;
-            char *fp                = NULL;
-            char *err_msg;
-            
-            buff_recv = (char *)realloc(buff_recv, len_recv);
-            
+        if(len_recv > 0) {            
             sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Recv data: %s, Recv_len: %lu", pid, client_ip, client_port, buff_recv, len_recv);
             slog_print(SLOG_INFO, 1, buff_log);
             
@@ -372,19 +378,19 @@ void *pthread_routine(void *arg) {
             
             free(resp); //Freeing dynamically allocated memory(resp)
             err_msg = NULL;
-        }
-
-        free(buff_recv); //Freeing dynamically allocated memory(buff_recv)
+        }   
     }
+
+    free(buff_recv); //Freeing dynamically allocated memory(buff_recv)
 
     return 0;
 }
 
 void send_messange(int connfd, char *resp, char *error_message, int buff_send_size) {
-    int len_resp    = strlen(resp);
+    int len_resp    = strlen(resp) + 1;
     char *buff_send = (char *)malloc(len_resp * sizeof(char));
 
-    sprintf(buff_send, "%s", resp);
+    strcpy(buff_send, resp);
     
     if(send(connfd, buff_send, len_resp , 0) == -1) {
         sprintf(buff_log, "- PID: %i - IP: %s, Port: %d, Error: %s", pid, client_ip, client_port, error_message);

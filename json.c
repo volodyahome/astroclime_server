@@ -175,11 +175,9 @@ char *answer_json(int answer, int memory_size) {
             break;
     }
 
-    len_json = strlen(json_object_to_json_string_ext(jobj, JSON_C_TO_STRING_PLAIN));
+    len_json = strlen(json_object_to_json_string_ext(jobj, JSON_C_TO_STRING_PLAIN)) + 1;
     
-    if(len_json > memory_size) {
-        response = (char *)realloc(response, len_json);
-    }
+    response = (char *)realloc(response, len_json);
     
     sprintf(response, "%s", json_object_to_json_string_ext(jobj, JSON_C_TO_STRING_PLAIN));
     
