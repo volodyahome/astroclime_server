@@ -101,9 +101,10 @@ int parse_json(char *buff_recv) {
     return result;
 }
 
-char *answer_json(int answer) {
+char *answer_json(int answer, int memory_size) {
     int i;
-    char *response = malloc(128*sizeof(char));
+    char *response  = malloc(memory_size * sizeof(char));
+    int len_json    = 0;
     
     struct json_object *jobj        = json_object_new_object();
     struct json_object *jarray      = json_object_new_array();
@@ -173,12 +174,18 @@ char *answer_json(int answer) {
             
             break;
     }
+
+    len_json = strlen(json_object_to_json_string_ext(jobj, JSON_C_TO_STRING_PLAIN));
+    
+    if(len_json > memory_size) {
+        response = (char *)realloc(response, len_json);
+    }
     
     sprintf(response, "%s", json_object_to_json_string_ext(jobj, JSON_C_TO_STRING_PLAIN));
     
-    //resp = conn = mem_used = fwsize = fwmd5 = dt = buff = NULL;
+    resp = conn = mem_used = fwsize = fwmd5 = dt = buff = NULL;
     
-    //json_object_put(jobj);
+    json_object_put(jobj);
    
     return response;
 }

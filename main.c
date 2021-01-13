@@ -190,15 +190,14 @@ int daemon_server(char *cnf_path) {
 
 void *pthread_routine(void *arg) {
     pthread_arg_t *pthread_arg  = (pthread_arg_t *)arg;
-    int connfd = pthread_arg->connfd;
     int keep_run                = 1;
+    int connfd = pthread_arg->connfd;
 
     while (keep_run) {
         ssize_t len_recv;
+        char buff_tmp[BUFF_SIZE]    = {0};
         size_t memory_size          = pthread_arg->buff_recv_size * sizeof(char);
         char *buff_recv             = (char *)malloc(memory_size);
-        // buff_recv                   = NULL;
-        char buff_tmp[BUFF_SIZE]    = {0};
         
         len_recv = recv(connfd, buff_recv, memory_size, 0);
         if(len_recv == -1) {
@@ -239,7 +238,7 @@ void *pthread_routine(void *arg) {
             switch (parse_json(buff_recv)) {
                 case PING://{"cmd":"ping"}
                     
-                    resp = answer_json(PING);
+                    resp = answer_json(PING, memory_size);
                     
                     if(resp == NULL) {
                         err_msg = "Error malloc";
@@ -252,7 +251,7 @@ void *pthread_routine(void *arg) {
                     send_messange(connfd, resp, err_msg, pthread_arg->buff_send_size);
                     break;
                 case RANDOM://{"cmd":"random","len":120}                    
-                    resp = answer_json(RANDOM);
+                    resp = answer_json(RANDOM, memory_size);
 
                     if(resp == NULL) {
                         err_msg = "Error malloc";
@@ -266,7 +265,7 @@ void *pthread_routine(void *arg) {
                     break;
                 case STAT://{"cmd":"stat"}
                     
-                    resp = answer_json(STAT);
+                    resp = answer_json(STAT, memory_size);
                     
                     if(resp == NULL) {
                         err_msg = "Error malloc";
@@ -285,7 +284,7 @@ void *pthread_routine(void *arg) {
                     break;
                 case FWINFO://{"cmd":"fwinfo"}
                     
-                    resp = answer_json(FWINFO);
+                    resp = answer_json(FWINFO, memory_size);
                     
                     if(resp == NULL) {
                         err_msg = "Error malloc";
@@ -307,7 +306,7 @@ void *pthread_routine(void *arg) {
                                         
                     break;
                 case FWGET://{"cmd":"fwget","count":40,"start":0}
-                    resp = answer_json(FWGET);
+                    resp = answer_json(FWGET, memory_size);
                     
                     if(resp == NULL) {
                         err_msg = "Error malloc";
@@ -332,7 +331,7 @@ void *pthread_routine(void *arg) {
                     break;
                 case CLOSE://{"cmd":"close"}
                     
-                    resp = answer_json(CLOSE);
+                    resp = answer_json(CLOSE, memory_size);
                     
                     if(resp == NULL) {
                         err_msg = "Error malloc";
@@ -372,14 +371,12 @@ void *pthread_routine(void *arg) {
             }
             
             free(resp); //Freeing dynamically allocated memory(resp)
-            resp    = NULL;
             err_msg = NULL;
         }
-        
+
         free(buff_recv); //Freeing dynamically allocated memory(buff_recv)
-        buff_recv = NULL;
     }
-    
+
     return 0;
 }
 

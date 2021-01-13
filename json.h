@@ -55,7 +55,7 @@ enum Error {
 int parse_json(char *buff_recv);
 
 //Create JSON answer
-char *answer_json(int answer);
+char *answer_json(int answer, int memory_size);
 
 //Create JSON error
 char *error_json(int err);
