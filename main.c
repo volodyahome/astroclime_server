@@ -159,10 +159,8 @@ int daemon_server(char *cnf_path) {
             
             continue;
         } else {
-            struct sockaddr_in* pV4Addr = (struct sockaddr_in*)&client_addr;
-            struct in_addr ipAddr = pV4Addr->sin_addr;
-            inet_ntop(AF_INET, &ipAddr, client_ip, INET_ADDRSTRLEN);
-            client_port = htons (pV4Addr->sin_port);
+            inet_ntop(AF_INET, &pthread_arg->client_address, client_ip, INET_ADDRSTRLEN);
+            //client_port = htons(pthread_arg->client_address->sin_port);
 
             count_conn++;
             
