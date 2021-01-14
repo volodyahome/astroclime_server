@@ -80,7 +80,7 @@ int count_conn = 0;
 struct sockaddr_in serv_addr, client_addr;
 
 //Ip address of the connected client
-char client_ip[INET_ADDRSTRLEN];
+char *client_ip = NULL;
 
 //Port of the connected client
 unsigned int client_port;

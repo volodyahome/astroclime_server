@@ -159,7 +159,8 @@ int daemon_server(char *cnf_path) {
             
             continue;
         } else {
-            inet_ntop(AF_INET, (struct sockaddr*)&pthread_arg->client_address, client_ip, INET_ADDRSTRLEN);
+            client_ip = inet_ntoa(pthread_arg->client_address.sin_addr);
+            //inet_ntop(AF_INET, (struct sockaddr*)&pthread_arg->client_address, client_ip, INET_ADDRSTRLEN);
 
             count_conn++;
             
