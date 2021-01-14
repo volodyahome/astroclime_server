@@ -61,7 +61,7 @@
 
 #define SLOG_FLAGS_CHECK(c, f) (((c) & (f)) == (f))
 #define SLOG_FLAGS_ALL      255
-#define SLOG_BUFF_LOG       512
+#define SLOG_BUFF_LOG       2048
 
 /* Log level flags */
 typedef enum

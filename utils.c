@@ -102,7 +102,7 @@ char *read_fw(const char * firmware_file_name, int start, int count) {
     FILE    *fp;
     char    buff[count];
     
-    file_part = malloc(sizeof *file_part*MAXSTRINGLEN);
+    file_part = malloc(MAXSTRINGLEN * sizeof(*file_part) + 1);
     
     if(file_part == NULL) {
         slog_print(SLOG_ERROR, 1, "Error in malloc method read_fw");

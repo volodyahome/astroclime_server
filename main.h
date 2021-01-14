@@ -44,8 +44,7 @@
 
 #define SERVER_VERSION "0.1.1"
 
-#define BUFF_SIZE       1024
-#define BUFF_SEND       512
+#define BUFF_SIZE       2048
 
 //Process id
 pid_t pid;
