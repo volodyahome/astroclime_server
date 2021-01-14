@@ -134,6 +134,7 @@ struct stat info_fw(const char *firmware_file_name) {
     if(fp == NULL)
     {
         slog_print(SLOG_ERROR, 1, "Error occured while opening file");
+        return file_info;
     }
 
     fd = fileno(fp);
@@ -156,6 +157,7 @@ char *md5_fw(const char * firmware_file_name){
     if((fp= fopen(firmware_file_name, "rb"))==NULL)
     {
         slog_print(SLOG_ERROR, 1, "Error occured while opening file");
+        return md5_hash;
     }
     
     MD5_Init(&md_context);

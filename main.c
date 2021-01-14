@@ -300,6 +300,22 @@ void *pthread_routine(void *arg) {
                     }
                     
                     ifw = info_fw(firmware_file_name);
+
+                    if(ifw.st_size == 0) {
+                        resp = error_json(NO_SUCH_FILE);
+                    
+                        if(resp == NULL) {
+                            err_msg = "Error malloc";
+                            log_error(buff_log, err_msg);
+                            
+                            break;
+                        }
+
+                        err_msg = "Error send fwinfo";
+
+                        send_messange(connfd, resp, err_msg, pthread_arg->buff_send_size);
+                        break;
+                    }
                     
                     md5_hash = md5_fw(firmware_file_name);
                     
