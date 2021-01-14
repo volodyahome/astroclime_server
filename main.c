@@ -160,7 +160,7 @@ int daemon_server(char *cnf_path) {
             continue;
         } else {
             client_ip = inet_ntoa(pthread_arg->client_address.sin_addr);
-            client_port = ntohs(client_addr.sin_port);
+            client_port = ntohs(pthread_arg->client_address.sin_port);
 
             count_conn++;
             
