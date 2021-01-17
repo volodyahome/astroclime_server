@@ -101,7 +101,7 @@ typedef struct pthread_arg_t {
     int                 buff_recv_size;
     int                 buff_send_size;
     struct sockaddr_in  client_address;
-    char                redis_host;
+    const char *        redis_host;
     int                 redis_port;
 } pthread_arg_t;
 
