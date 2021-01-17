@@ -37,6 +37,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include <hiredis/hiredis.h>
+
 #include "logger.h"
 #include "json.h"
 #include "ini.h"
@@ -95,10 +97,12 @@ struct rusage usage;
 pthread_attr_t pthread_attr;
 
 typedef struct pthread_arg_t {
-    int connfd;
-    int buff_recv_size;
-    int buff_send_size;
-    struct sockaddr_in client_address;
+    int                 connfd;
+    int                 buff_recv_size;
+    int                 buff_send_size;
+    struct sockaddr_in  client_address;
+    char                redis_host;
+    int                 redis_port;
 } pthread_arg_t;
 
 pthread_arg_t *pthread_arg;

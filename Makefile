@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-g -std=c99 -Wall -D_GNU_SOURCE
-CLIBS=-lcrypto -ljson-c -pthread
+CLIBS=-lcrypto -ljson-c -pthread -lhiredis
 SOURCES=main.c json.c utils.c ini.c logger.c
 EXECUTABLE=astroclime_server
 CONFIG=cnf.ini

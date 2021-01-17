@@ -31,6 +31,12 @@ int fw_start_byte = 0;
 //Length array
 int len_array = 0;
 
+//Analytics
+char *data_analytic = NULL;
+
+//Board uid
+char *board_uid = NULL;
+
 int parse_json(char *buff_recv) {
     
     struct json_object *parsed_json = NULL;
@@ -88,6 +94,21 @@ int parse_json(char *buff_recv) {
             result = 5;
         }
         if (strcmp("analytics", response) == 0) {
+            struct json_object *data    = NULL; //Analytic
+            struct json_object *uid     = NULL; //Uid board
+
+            json_object_object_get_ex(parsed_json, "data", &data);
+            if(data != NULL) {
+                data_analytic = json_object_get_string(data);
+            }
+
+            json_object_object_get_ex(parsed_json, "uid", &uid);
+            if(uid != NULL) {
+                board_uid = json_object_get_string(uid);
+            }
+            
+            data = uid = NULL;
+
             result = 6;
         }
     } else {

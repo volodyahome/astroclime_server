@@ -1,10 +1,16 @@
 ### Сборка:
-Ось: Centos 8
+OS: Centos 8
+
 Пакеты: git, make, gcc
 
 #### Необходимые библиотеки:
-OpenSSL 1.0.2k-fips  26 Jan 2017 и выше
-json-c-devel.x86_64  0.13  и выше
+openssl
+
+json-c-devel v0.13^
+
+hiredis
+
+hiredis-devel
 
 ### Соединение:
 

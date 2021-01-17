@@ -139,14 +139,16 @@ int daemon_server(char *cnf_path) {
         pthread_arg = (pthread_arg_t *)malloc(sizeof *pthread_arg);
         if (!pthread_arg) {
             slog_print(SLOG_FATAL, 1, "Error malloc pthread_arg");
-            
             continue;
         }
 
         pthread_arg->buff_recv_size = atoi(ini_get(config, "server", "buff_recv_size"));
         pthread_arg->buff_send_size = atoi(ini_get(config, "server", "buff_send_size"));
-        
-        /* Accept connection to client. */
+        //Redis conf
+        pthread_arg->redis_host = ini_get(config, "redis", "redis_host");
+        pthread_arg->redis_port = atoi(ini_get(config, "redis", "redis_port"));
+
+        //Accept connection to client
         client_address_len = sizeof pthread_arg->client_address;
         
         pthread_arg->connfd = accept(sockfd, (struct sockaddr*)&pthread_arg->client_address, &client_address_len);
@@ -207,12 +209,15 @@ void *pthread_routine(void *arg) {
         struct stat ifw;
         int fw_cb;
         int fw_sb;
+        redisContext *c;
+        redisReply *reply;
         char buff_tmp[BUFF_SIZE]    = {0}; 
         char *resp                  = NULL; //JSON
         char *md5_hash              = NULL; //MD5 hash file
         char *fw_receipt_time       = NULL; //Receipt time
         char *fp                    = NULL;
         char *err_msg               = NULL;
+                    
         
         len_recv = recv(connfd, buff_recv, memory_size, 0);
         
@@ -340,7 +345,6 @@ void *pthread_routine(void *arg) {
                     
                     fp = read_fw(firmware_file_name, fw_sb, fw_cb);
                     
-                    
                     sprintf(buff_tmp, resp, fp);
                     
                     free(fp); //Freeing dynamically allocated memory(file_part)
@@ -372,6 +376,26 @@ void *pthread_routine(void *arg) {
                     
                     keep_run = 0;
                                                                 
+                    break;
+
+                case ANALYTICS://{"cmd":"analytics","data":"[1,2,3,4]", "uid":"xxx"}
+                    c = redisConnect(pthread_arg->redis_host, pthread_arg->redis_port);
+                    if (c == NULL || c->err) {
+                        if (c) {
+                            err_msg = "Error connection redis";
+                            log_error(buff_log, err_msg);
+                            redisFree(c);
+                        } else {
+                            err_msg = "Connection redis error: can't allocate redis context";
+                            log_error(buff_log, err_msg);
+                        }
+
+                        break;
+                    }
+                    reply = redisCommand(c, "SET test %s", "test");
+                    
+                    redisFree(c);
+                    
                     break;
                 case OTHER://Invalid command
                     
